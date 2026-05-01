@@ -10,7 +10,10 @@ import {
   PutCommand,
   BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
+
+const alphanumeric = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const nanoid = customAlphabet(alphanumeric, 8);
 import { z } from 'zod';
 import {
   DeterministicExtraction,
@@ -22,10 +25,12 @@ import {
 } from '../shared/entities';
 
 const bedrock = new BedrockRuntimeClient({});
-const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
+  marshallOptions: { removeUndefinedValues: true },
+});
 
 const TABLE = process.env.SIGNALS_TABLE!;
-const MODEL_ID = 'anthropic.claude-3-haiku-20240307-v1:0';
+const MODEL_ID = 'eu.anthropic.claude-haiku-4-5-20251001-v1:0';
 const PROMPT_VERSION = 'interpret-v2';
 
 interface InterpreterInput {
@@ -53,7 +58,7 @@ const LLMClaimSchema = z.object({
   ]),
   subject: z.string(),
   predicate: z.string(),
-  object: z.string(),
+  object: z.string().optional(),
   value: z.string().optional(),
   strength: z.enum(['weak', 'moderate', 'strong']),
   reasoning: z.string(),
@@ -126,12 +131,12 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   const llmOutput = parseStructuredOutput(rawResponse);
 
   // Create interpretation
-  const interpretationId = `intp_${nanoid(8)}`;
+  const interpretationId = `intp_${nanoid()}`;
   const now = new Date().toISOString();
 
   // Convert LLM claims to Claim records
   const claims: Claim[] = llmOutput.claims.map((llmClaim) => ({
-    claimId: `clm_${nanoid(8)}`,
+    claimId: `clm_${nanoid()}`,
     claimType: llmClaim.type as ClaimType,
     subject: llmClaim.subject,
     predicate: llmClaim.predicate,
@@ -350,7 +355,7 @@ function parseStructuredOutput(rawResponse: string): LLMOutput {
 
   // Handle markdown code blocks
   const jsonMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (jsonMatch) {
+  if (jsonMatch?.[1]) {
     jsonStr = jsonMatch[1].trim();
   }
 
@@ -375,8 +380,8 @@ function parseStructuredOutput(rawResponse: string): LLMOutput {
 }
 
 function calculateCost(tokensIn: number, tokensOut: number): number {
-  // Claude 3 Haiku pricing (as of 2024)
-  const inputCostPer1k = 0.00025;
-  const outputCostPer1k = 0.00125;
+  // Claude Haiku 4.5 pricing ($0.80/M in, $4/M out)
+  const inputCostPer1k = 0.0008;
+  const outputCostPer1k = 0.004;
   return (tokensIn / 1000) * inputCostPer1k + (tokensOut / 1000) * outputCostPer1k;
 }

@@ -1,12 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
+import * as path from 'path';
 
 interface WorkflowStackProps extends cdk.StackProps {
   stage: string;
@@ -27,11 +29,11 @@ export class WorkflowStack extends cdk.Stack {
     });
 
     // Deterministic extractor Lambda
-    const extractorFn = new lambda.Function(this, 'ExtractorFn', {
+    const extractorFn = new NodejsFunction(this, 'ExtractorFn', {
       functionName: `bndy-signals-extractor-${props.stage}`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset('functions/deterministic-extractor'),
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/deterministic-extractor/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.minutes(5),
       memorySize: 1024,
       environment: {
@@ -39,21 +41,29 @@ export class WorkflowStack extends cdk.Stack {
         SIGNALS_TABLE: props.signalsTable.tableName,
         STAGE: props.stage,
       },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
     });
     props.signalsBucket.grantRead(extractorFn);
     props.signalsTable.grantReadWriteData(extractorFn);
 
     // Interpretation runner Lambda
-    const interpreterFn = new lambda.Function(this, 'InterpreterFn', {
+    const interpreterFn = new NodejsFunction(this, 'InterpreterFn', {
       functionName: `bndy-signals-interpreter-${props.stage}`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset('functions/interpretation-runner'),
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/interpretation-runner/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.minutes(5),
       memorySize: 1024,
       environment: {
         SIGNALS_TABLE: props.signalsTable.tableName,
         STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
       },
     });
     props.signalsTable.grantReadWriteData(interpreterFn);
@@ -68,17 +78,21 @@ export class WorkflowStack extends cdk.Stack {
     );
 
     // Failure handler Lambda
-    const failureHandlerFn = new lambda.Function(this, 'FailureHandlerFn', {
+    const failureHandlerFn = new NodejsFunction(this, 'FailureHandlerFn', {
       functionName: `bndy-signals-failure-handler-${props.stage}`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset('functions/failure-handler'),
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/failure-handler/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(30),
       memorySize: 256,
       environment: {
         SIGNALS_TABLE: props.signalsTable.tableName,
         DLQ_URL: dlq.queueUrl,
         STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
       },
     });
     props.signalsTable.grantReadWriteData(failureHandlerFn);

@@ -14,6 +14,7 @@
     "deploy:prod": "cdk deploy --all --require-approval broadening"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.161",
     "@types/node": "^20.11.0",
     "aws-cdk": "^2.120.0",
     "aws-cdk-lib": "^2.120.0",

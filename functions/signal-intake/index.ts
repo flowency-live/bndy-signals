@@ -3,7 +3,10 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn';
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
+
+const alphanumeric = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const nanoid = customAlphabet(alphanumeric, 8);
 import { ZodError } from 'zod';
 import { CreateSignalInputSchema, Signal } from '../shared/entities';
 
@@ -20,7 +23,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     const body = JSON.parse(event.body ?? '{}');
     const input = CreateSignalInputSchema.parse(body);
 
-    const signalId = `sgnl_${nanoid(8)}`;
+    const signalId = `sgnl_${nanoid()}`;
     const now = new Date().toISOString();
     const s3Key = `signals/${signalId}/raw`;
 

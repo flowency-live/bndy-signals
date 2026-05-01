@@ -31,7 +31,7 @@ export const ClaimSchema = z.object({
   // What the claim asserts
   subject: z.string(),
   predicate: z.string(),
-  object: z.string(),
+  object: z.string().optional(),
   value: z.string().optional(),
 
   // Strength assessment
@@ -54,6 +54,8 @@ export const ClaimSchema = z.object({
   reviewedAt: z.string().datetime().optional(),
   reviewedBy: z.string().optional(),
   challengeReason: z.string().optional(),
+}).refine((claim) => claim.object || claim.value, {
+  message: 'Claim must include either object or value',
 });
 
 export type Claim = z.infer<typeof ClaimSchema>;

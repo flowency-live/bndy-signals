@@ -1,10 +1,12 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
+import * as path from 'path';
 
 interface ApiStackProps extends cdk.StackProps {
   stage: string;
@@ -18,11 +20,11 @@ export class ApiStack extends cdk.Stack {
     super(scope, id, props);
 
     // Signal intake Lambda (POST /signals)
-    const signalIntakeFn = new lambda.Function(this, 'SignalIntakeFn', {
+    const signalIntakeFn = new NodejsFunction(this, 'SignalIntakeFn', {
       functionName: `bndy-signals-intake-${props.stage}`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset('functions/signal-intake'),
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/signal-intake/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(30),
       memorySize: 256,
       environment: {
@@ -31,20 +33,28 @@ export class ApiStack extends cdk.Stack {
         SIGNAL_WORKFLOW_ARN: props.signalWorkflow.stateMachineArn,
         STAGE: props.stage,
       },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
     });
 
     // Signal get Lambda (GET /signals/{signalId})
-    const signalGetFn = new lambda.Function(this, 'SignalGetFn', {
+    const signalGetFn = new NodejsFunction(this, 'SignalGetFn', {
       functionName: `bndy-signals-get-${props.stage}`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset('functions/signal-get'),
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/signal-get/index.ts'),
+      handler: 'handler',
       timeout: cdk.Duration.seconds(30),
       memorySize: 256,
       environment: {
         SIGNALS_BUCKET: props.signalsBucket.bucketName,
         SIGNALS_TABLE: props.signalsTable.tableName,
         STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
       },
     });
 
