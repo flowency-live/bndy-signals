@@ -18,6 +18,7 @@ export const SignalStatusSchema = z.enum([
   'pending_review',
   'reviewed',
   'challenged',
+  'failed',
 ]);
 export type SignalStatus = z.infer<typeof SignalStatusSchema>;
 
@@ -46,17 +47,45 @@ export const SignalSchema = z.object({
   // Current interpretation (latest)
   currentInterpretationId: z.string().optional(),
   interpretationCount: z.number().int().nonnegative().default(0),
+
+  // Failure info (if status === 'failed')
+  failedAt: z.string().datetime().optional(),
+  failedStep: z.enum(['extraction', 'interpretation']).optional(),
+  failureReason: z.string().optional(),
 });
 
 export type Signal = z.infer<typeof SignalSchema>;
 
-export const CreateSignalInputSchema = SignalSchema.pick({
-  signalType: true,
-  sourceUrl: true,
-  sourceDescription: true,
-  submittedBy: true,
-  mimeType: true,
-  fileSize: true,
-});
+export const CreateSignalInputSchema = z.object({
+  signalType: SignalTypeSchema,
+
+  // Content - one of these is required depending on signalType
+  content: z.string().optional(),           // For text_paste, note
+  sourceUrl: z.string().url().optional(),   // For url type
+  base64Content: z.string().optional(),     // For image, spreadsheet uploads
+
+  // Optional metadata
+  sourceDescription: z.string().optional(),
+  submittedBy: z.string().optional(),
+  mimeType: z.string().optional(),
+  fileName: z.string().optional(),
+}).refine(
+  (data) => {
+    // Validate required content based on signalType
+    if (data.signalType === 'url') {
+      return !!data.sourceUrl;
+    }
+    if (data.signalType === 'text_paste' || data.signalType === 'note') {
+      return !!data.content;
+    }
+    if (data.signalType === 'image' || data.signalType === 'spreadsheet') {
+      return !!data.base64Content || !!data.sourceUrl;
+    }
+    return true;
+  },
+  {
+    message: 'Content required: sourceUrl for URL type, content for text/note, base64Content or sourceUrl for image/spreadsheet',
+  }
+);
 
 export type CreateSignalInput = z.infer<typeof CreateSignalInputSchema>;

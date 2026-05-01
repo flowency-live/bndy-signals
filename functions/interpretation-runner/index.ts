@@ -8,13 +8,17 @@ import {
   DynamoDBDocumentClient,
   UpdateCommand,
   PutCommand,
+  BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { nanoid } from 'nanoid';
+import { z } from 'zod';
 import {
   DeterministicExtraction,
   Interpretation,
   SourceCost,
   Claim,
+  ClaimType,
+  Strength,
 } from '../shared/entities';
 
 const bedrock = new BedrockRuntimeClient({});
@@ -22,7 +26,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const TABLE = process.env.SIGNALS_TABLE!;
 const MODEL_ID = 'anthropic.claude-3-haiku-20240307-v1:0';
-const PROMPT_VERSION = 'interpret-v1';
+const PROMPT_VERSION = 'interpret-v2';
 
 interface InterpreterInput {
   signalId: string;
@@ -34,6 +38,34 @@ interface InterpreterOutput {
   interpretationId: string;
   claims: Claim[];
 }
+
+// Schema for Claude's structured output
+const LLMClaimSchema = z.object({
+  type: z.enum([
+    'event_exists',
+    'artist_performs',
+    'venue_hosts',
+    'event_date',
+    'event_time',
+    'ticket_source',
+    'artist_exists',
+    'venue_exists',
+  ]),
+  subject: z.string(),
+  predicate: z.string(),
+  object: z.string(),
+  value: z.string().optional(),
+  strength: z.enum(['weak', 'moderate', 'strong']),
+  reasoning: z.string(),
+});
+
+const LLMOutputSchema = z.object({
+  summary: z.string(),
+  claims: z.array(LLMClaimSchema),
+  uncertainties: z.array(z.string()),
+});
+
+type LLMOutput = z.infer<typeof LLMOutputSchema>;
 
 export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   event
@@ -66,7 +98,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
       accept: 'application/json',
       body: JSON.stringify({
         anthropic_version: 'bedrock-2023-05-31',
-        max_tokens: 2048,
+        max_tokens: 4096,
         messages: [{ role: 'user', content: prompt }],
       }),
     })
@@ -75,7 +107,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   const responseBody = JSON.parse(
     new TextDecoder().decode(bedrockResponse.body)
   );
-  const reasoning = responseBody.content[0].text;
+  const rawResponse = responseBody.content[0].text;
 
   // Calculate costs
   const runtimeMs = Date.now() - startTime;
@@ -90,12 +122,28 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     runtimeMs,
   };
 
+  // Parse structured output
+  const llmOutput = parseStructuredOutput(rawResponse);
+
   // Create interpretation
   const interpretationId = `intp_${nanoid(8)}`;
   const now = new Date().toISOString();
 
-  // TODO: Parse reasoning into structured claims
-  const claims: Claim[] = [];
+  // Convert LLM claims to Claim records
+  const claims: Claim[] = llmOutput.claims.map((llmClaim) => ({
+    claimId: `clm_${nanoid(8)}`,
+    claimType: llmClaim.type as ClaimType,
+    subject: llmClaim.subject,
+    predicate: llmClaim.predicate,
+    object: llmClaim.object,
+    value: llmClaim.value,
+    strength: llmClaim.strength as Strength,
+    strengthReasoning: llmClaim.reasoning,
+    interpretationId,
+    signalId,
+    status: 'proposed' as const,
+    createdAt: now,
+  }));
 
   const interpretation: Interpretation = {
     interpretationId,
@@ -106,12 +154,12 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
       modelUsed: MODEL_ID,
       modelProvider: 'bedrock',
       promptVersion: PROMPT_VERSION,
-      reasoning,
-      rawResponse: JSON.stringify(responseBody),
+      reasoning: llmOutput.summary,
+      rawResponse,
     },
     sourceCost,
     claims,
-    uncertainties: [],
+    uncertainties: llmOutput.uncertainties,
     status: 'pending_review',
     createdAt: now,
   };
@@ -130,7 +178,34 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     })
   );
 
-  // Link to signal
+  // Store claims individually for querying
+  if (claims.length > 0) {
+    const claimItems = claims.map((claim) => ({
+      PutRequest: {
+        Item: {
+          PK: `CLAIM#${claim.claimId}`,
+          SK: '#METADATA',
+          GSI1PK: `STATUS#${claim.status}`,
+          GSI1SK: `CLAIM#${claim.claimId}`,
+          GSI2PK: `SIGNAL#${signalId}`,
+          GSI2SK: `CLAIM#${claim.claimId}`,
+          ...claim,
+        },
+      },
+    }));
+
+    // BatchWrite in chunks of 25
+    for (let i = 0; i < claimItems.length; i += 25) {
+      const batch = claimItems.slice(i, i + 25);
+      await ddb.send(
+        new BatchWriteCommand({
+          RequestItems: { [TABLE]: batch },
+        })
+      );
+    }
+  }
+
+  // Link interpretation to signal
   await ddb.send(
     new PutCommand({
       TableName: TABLE,
@@ -139,6 +214,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
         SK: `INTP#${interpretationId}`,
         interpretationId,
         version: 1,
+        claimCount: claims.length,
         createdAt: now,
       },
     })
@@ -173,25 +249,129 @@ function buildInterpretationPrompt(extraction: DeterministicExtraction): string 
 
 This content was extracted from a signal (user-submitted evidence):
 
+<content>
 ${extraction.rawText ?? 'No text content available'}
+</content>
 
-What does this tell us about the live music world?
+Analyze this evidence and generate structured claims about the live music world.
 
-Generate claims about:
-- Events that exist (artist performing at venue on date)
-- Artists mentioned
-- Venues mentioned
-- Dates and times
-- Ticket sources
+You MUST respond with valid JSON in this exact format:
+{
+  "summary": "Brief explanation of what this evidence tells us",
+  "claims": [
+    {
+      "type": "event_exists|artist_performs|venue_hosts|event_date|event_time|ticket_source|artist_exists|venue_exists",
+      "subject": "The entity making or receiving the claim",
+      "predicate": "The relationship or action",
+      "object": "The target entity or value",
+      "value": "Optional specific value (date, time, URL)",
+      "strength": "weak|moderate|strong",
+      "reasoning": "Why you believe this claim at this strength"
+    }
+  ],
+  "uncertainties": ["Things you are not sure about"]
+}
 
-For each claim, indicate your confidence:
-- STRONG: Multiple clear indicators
-- MODERATE: Single clear indicator
-- WEAK: Implied or uncertain
+Claim types:
+- event_exists: An event is happening (subject=event name, object=description)
+- artist_performs: An artist is performing (subject=artist, predicate=performs_at, object=event/venue)
+- venue_hosts: A venue is hosting (subject=venue, predicate=hosts, object=event)
+- event_date: Event has a date (subject=event, predicate=on_date, value=YYYY-MM-DD)
+- event_time: Event has a time (subject=event, predicate=at_time, value=HH:MM)
+- ticket_source: Tickets available (subject=event, predicate=tickets_at, object=source name, value=URL)
+- artist_exists: Artist mentioned (subject=artist name, object=any identifiers)
+- venue_exists: Venue mentioned (subject=venue name, object=location if known)
 
-Also note any uncertainties - things you're not sure about.
+Strength levels:
+- strong: Multiple clear indicators or authoritative source
+- moderate: Single clear indicator
+- weak: Implied or uncertain, needs corroboration
 
-Format your response as reasoning about what this evidence tells us.`;
+Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM":
+{
+  "summary": "Announcement for Stingray performing at The Rigger on May 15th",
+  "claims": [
+    {
+      "type": "event_exists",
+      "subject": "Stingray Live",
+      "predicate": "exists",
+      "object": "Live music event",
+      "strength": "moderate",
+      "reasoning": "Single announcement, appears to be event promotion"
+    },
+    {
+      "type": "artist_performs",
+      "subject": "Stingray",
+      "predicate": "performs_at",
+      "object": "The Rigger",
+      "strength": "moderate",
+      "reasoning": "Artist name clearly stated in event title"
+    },
+    {
+      "type": "venue_hosts",
+      "subject": "The Rigger",
+      "predicate": "hosts",
+      "object": "Stingray Live",
+      "strength": "moderate",
+      "reasoning": "Venue name clearly stated, but no address to confirm identity"
+    },
+    {
+      "type": "event_date",
+      "subject": "Stingray Live",
+      "predicate": "on_date",
+      "object": "2026-05-15",
+      "value": "2026-05-15",
+      "strength": "weak",
+      "reasoning": "Date given as 'Thursday 15th May' - year inferred as next occurrence"
+    },
+    {
+      "type": "event_time",
+      "subject": "Stingray Live",
+      "predicate": "at_time",
+      "object": "20:00",
+      "value": "20:00",
+      "strength": "moderate",
+      "reasoning": "Time clearly stated as 8PM"
+    }
+  ],
+  "uncertainties": [
+    "Year not specified - inferred as 2026",
+    "Venue location unknown - cannot confirm which 'The Rigger' this is",
+    "Unclear if 8PM is doors or start time"
+  ]
+}
+
+Now analyze the content above and respond with JSON only.`;
+}
+
+function parseStructuredOutput(rawResponse: string): LLMOutput {
+  // Try to extract JSON from response
+  let jsonStr = rawResponse;
+
+  // Handle markdown code blocks
+  const jsonMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (jsonMatch) {
+    jsonStr = jsonMatch[1].trim();
+  }
+
+  // Try to find JSON object
+  const objectMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (objectMatch) {
+    jsonStr = objectMatch[0];
+  }
+
+  try {
+    const parsed = JSON.parse(jsonStr);
+    return LLMOutputSchema.parse(parsed);
+  } catch (error) {
+    // Fallback: return empty claims with error noted
+    console.error('Failed to parse LLM output:', error);
+    return {
+      summary: 'Failed to parse structured output',
+      claims: [],
+      uncertainties: ['LLM response could not be parsed as structured JSON'],
+    };
+  }
 }
 
 function calculateCost(tokensIn: number, tokensOut: number): number {

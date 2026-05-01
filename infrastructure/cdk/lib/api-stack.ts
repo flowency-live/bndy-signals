@@ -17,7 +17,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    // Signal intake Lambda
+    // Signal intake Lambda (POST /signals)
     const signalIntakeFn = new lambda.Function(this, 'SignalIntakeFn', {
       functionName: `bndy-signals-intake-${props.stage}`,
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -33,10 +33,28 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
+    // Signal get Lambda (GET /signals/{signalId})
+    const signalGetFn = new lambda.Function(this, 'SignalGetFn', {
+      functionName: `bndy-signals-get-${props.stage}`,
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('functions/signal-get'),
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: {
+        SIGNALS_BUCKET: props.signalsBucket.bucketName,
+        SIGNALS_TABLE: props.signalsTable.tableName,
+        STAGE: props.stage,
+      },
+    });
+
     // Grant permissions
     props.signalsBucket.grantReadWrite(signalIntakeFn);
     props.signalsTable.grantReadWriteData(signalIntakeFn);
     props.signalWorkflow.grantStartExecution(signalIntakeFn);
+
+    props.signalsBucket.grantRead(signalGetFn);
+    props.signalsTable.grantReadData(signalGetFn);
 
     // API Gateway
     const api = new apigateway.RestApi(this, 'SignalsApi', {
@@ -56,6 +74,13 @@ export class ApiStack extends cdk.Stack {
     signals.addMethod(
       'POST',
       new apigateway.LambdaIntegration(signalIntakeFn)
+    );
+
+    // GET /signals/{signalId}
+    const signal = signals.addResource('{signalId}');
+    signal.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(signalGetFn)
     );
 
     // Outputs

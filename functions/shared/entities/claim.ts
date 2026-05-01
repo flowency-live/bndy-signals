@@ -42,9 +42,9 @@ export const ClaimSchema = z.object({
   interpretationId: z.string().regex(/^intp_[a-zA-Z0-9]{8}$/),
   signalId: z.string().regex(/^sgnl_[a-zA-Z0-9]{8}$/),
 
-  // Entity matching
+  // Entity matching (deterministic, not confidence)
   matchedEntityId: z.string().optional(),
-  matchConfidence: z.number().min(0).max(1).optional(),
+  entityMatchScore: z.number().min(0).max(1).optional(),
 
   // Status
   status: ClaimStatusSchema,
