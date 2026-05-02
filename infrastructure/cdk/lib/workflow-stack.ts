@@ -59,6 +59,7 @@ export class WorkflowStack extends cdk.Stack {
       memorySize: 1024,
       environment: {
         SIGNALS_TABLE: props.signalsTable.tableName,
+        BEDROCK_MODEL_ID: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0',
         STAGE: props.stage,
       },
       bundling: {

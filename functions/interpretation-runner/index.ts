@@ -30,7 +30,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
 });
 
 const TABLE = process.env.SIGNALS_TABLE!;
-const MODEL_ID = 'eu.anthropic.claude-haiku-4-5-20251001-v1:0';
+const MODEL_ID = process.env.BEDROCK_MODEL_ID!;
 const PROMPT_VERSION = 'interpret-v2';
 
 interface InterpreterInput {
