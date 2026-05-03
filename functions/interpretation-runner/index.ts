@@ -92,8 +92,9 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     })
   );
 
-  // Build prompt
-  const prompt = buildInterpretationPrompt(extraction);
+  // Build prompt with current date context
+  const currentDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const prompt = buildInterpretationPrompt(extraction, currentDate);
 
   // Call Bedrock
   const bedrockResponse = await bedrock.send(
@@ -249,8 +250,14 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   };
 };
 
-function buildInterpretationPrompt(extraction: DeterministicExtraction): string {
+function buildInterpretationPrompt(extraction: DeterministicExtraction, currentDate: string): string {
   return `You are analyzing evidence about live music events.
+
+<context>
+Current date: ${currentDate}
+When inferring dates, assume events are in the future relative to the current date.
+If a date like "Thursday 15th May" is given without a year, infer the next occurrence of that date.
+</context>
 
 This content was extracted from a signal (user-submitted evidence):
 
