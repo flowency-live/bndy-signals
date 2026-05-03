@@ -6,6 +6,8 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
+import { resolveEntityFromClaim, EntityResolutionResult } from '../entity-resolver';
+import { Claim } from '../shared/entities';
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
@@ -78,6 +80,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   const expressionAttributeValues: Record<string, unknown> = {
     ':reviewedAt': now,
   };
+  let entityResolution: EntityResolutionResult | null = null;
 
   switch (reviewAction.action) {
     case 'accept':
@@ -138,17 +141,31 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     })
   );
 
-  // If all claims are reviewed, update signal status
-  // (For now, we skip this - can add later when we have claim counts)
+  // If claim is accepted, trigger entity resolution
+  if (newStatus === 'accepted') {
+    const claim = claimResult.Item as Claim;
+    entityResolution = await resolveEntityFromClaim(claim, ddb);
+  }
+
+  // Build response
+  const response: Record<string, unknown> = {
+    claimId,
+    status: newStatus,
+    reviewedAt: now,
+  };
+
+  if (entityResolution) {
+    response.entityResolution = {
+      action: entityResolution.action,
+      entityId: entityResolution.entity.entityId,
+      entityType: entityResolution.entityType,
+    };
+  }
 
   return {
     statusCode: 200,
     headers: corsHeaders(),
-    body: JSON.stringify({
-      claimId,
-      status: newStatus,
-      reviewedAt: now,
-    }),
+    body: JSON.stringify(response),
   };
 };
 
