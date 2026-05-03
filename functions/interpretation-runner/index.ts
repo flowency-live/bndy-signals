@@ -364,6 +364,10 @@ Date inference rules:
 - If year is NOT stated, infer the next occurrence BUT mark strength as "weak" and add to uncertainties
 - Never present an inferred year as certain fact
 - Promo posted months ahead may reference next year - be conservative
+
+Time handling:
+- Times on posters/gig info are always the event START time (not "doors")
+- These are grassroots venues (pubs, small clubs) - there is no "doors time" concept
 </context>
 
 This content was extracted from a signal (user-submitted evidence):
@@ -455,8 +459,7 @@ Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM" (given current d
   ],
   "uncertainties": [
     "Year not specified - inferred as ${exampleYear} from current date ${currentDate}",
-    "Venue location unknown - cannot confirm which 'The Rigger' this is",
-    "Unclear if 8PM is doors or start time"
+    "Venue location unknown - cannot confirm which 'The Rigger' this is"
   ]
 }
 
