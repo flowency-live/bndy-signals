@@ -161,6 +161,18 @@ export const EventStatusSchema = z.enum([
 ]);
 export type EventStatus = z.infer<typeof EventStatusSchema>;
 
+// Verification status tracks trust level, separate from existence
+// A single signal can create an event - what changes is verification level
+export const VerificationStatusSchema = z.enum([
+  'unverified',          // Unknown submitter, no corroboration
+  'submitter_verified',  // Submitter has verified account
+  'community_verified',  // Multiple users confirm
+  'source_correlated',   // Found on external source
+  'venue_confirmed',     // Venue owner/rep confirmed
+  'artist_confirmed',    // Artist/band confirmed
+]);
+export type VerificationStatus = z.infer<typeof VerificationStatusSchema>;
+
 export const EventTypeSchema = z.enum([
   'gig',
   'club_night',
@@ -218,6 +230,10 @@ export const CanonicalEventSchema = z.object({
 
   // Event lifecycle status (different from entity status)
   eventStatus: EventStatusSchema.optional(),
+
+  // Trust level - separate from existence
+  // A single signal can create an event; verification tracks confidence
+  verificationStatus: VerificationStatusSchema.optional(),
 
   // Media
   imageUrl: z.string().url().optional(),

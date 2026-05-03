@@ -258,6 +258,35 @@ describe('CanonicalEventSchema', () => {
     expect(result.eventStatus).toBe('confirmed');
   });
 
+  it('accepts event with verificationStatus', () => {
+    const verifiedEvent: CanonicalEvent = {
+      ...validEvent,
+      verificationStatus: 'venue_confirmed',
+    };
+    const result = CanonicalEventSchema.parse(verifiedEvent);
+    expect(result.verificationStatus).toBe('venue_confirmed');
+  });
+
+  it('accepts all verification statuses', () => {
+    const statuses = [
+      'unverified',
+      'submitter_verified',
+      'community_verified',
+      'source_correlated',
+      'venue_confirmed',
+      'artist_confirmed',
+    ] as const;
+
+    for (const status of statuses) {
+      const event: CanonicalEvent = {
+        ...validEvent,
+        verificationStatus: status,
+      };
+      const result = CanonicalEventSchema.parse(event);
+      expect(result.verificationStatus).toBe(status);
+    }
+  });
+
   it('enforces entityType is event', () => {
     const invalid = { ...validEvent, entityType: 'artist' };
     expect(() => CanonicalEventSchema.parse(invalid)).toThrow();
