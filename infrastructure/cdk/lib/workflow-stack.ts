@@ -60,6 +60,8 @@ export class WorkflowStack extends cdk.Stack {
       environment: {
         SIGNALS_TABLE: props.signalsTable.tableName,
         BEDROCK_MODEL_ID: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0',
+        MODEL_INPUT_COST_PER_1K: '0.0008',   // Haiku 4.5: $0.80/M
+        MODEL_OUTPUT_COST_PER_1K: '0.004',   // Haiku 4.5: $4/M
         STAGE: props.stage,
       },
       bundling: {

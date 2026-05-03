@@ -135,21 +135,23 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   const interpretationId = `intp_${nanoid()}`;
   const now = new Date().toISOString();
 
-  // Convert LLM claims to Claim records
-  const claims: Claim[] = llmOutput.claims.map((llmClaim) => ({
-    claimId: `clm_${nanoid()}`,
-    claimType: llmClaim.type as ClaimType,
-    subject: llmClaim.subject,
-    predicate: llmClaim.predicate,
-    object: llmClaim.object,
-    value: llmClaim.value,
-    strength: llmClaim.strength as Strength,
-    strengthReasoning: llmClaim.reasoning,
-    interpretationId,
-    signalId,
-    status: 'proposed' as const,
-    createdAt: now,
-  }));
+  // Convert LLM claims to Claim records, filtering out invalid claims
+  const claims: Claim[] = llmOutput.claims
+    .filter((llmClaim) => llmClaim.object || llmClaim.value) // Require object OR value
+    .map((llmClaim) => ({
+      claimId: `clm_${nanoid()}`,
+      claimType: llmClaim.type as ClaimType,
+      subject: llmClaim.subject,
+      predicate: llmClaim.predicate,
+      object: llmClaim.object,
+      value: llmClaim.value,
+      strength: llmClaim.strength as Strength,
+      strengthReasoning: llmClaim.reasoning,
+      interpretationId,
+      signalId,
+      status: 'proposed' as const,
+      createdAt: now,
+    }));
 
   const interpretation: Interpretation = {
     interpretationId,
@@ -255,8 +257,11 @@ function buildInterpretationPrompt(extraction: DeterministicExtraction, currentD
 
 <context>
 Current date: ${currentDate}
-When inferring dates, assume events are in the future relative to the current date.
-If a date like "Thursday 15th May" is given without a year, infer the next occurrence of that date.
+Date inference rules:
+- If year is explicitly stated, use it with moderate/strong confidence
+- If year is NOT stated, infer the next occurrence BUT mark strength as "weak" and add to uncertainties
+- Never present an inferred year as certain fact
+- Promo posted months ahead may reference next year - be conservative
 </context>
 
 This content was extracted from a signal (user-submitted evidence):
@@ -387,8 +392,8 @@ function parseStructuredOutput(rawResponse: string): LLMOutput {
 }
 
 function calculateCost(tokensIn: number, tokensOut: number): number {
-  // Claude Haiku 4.5 pricing ($0.80/M in, $4/M out)
-  const inputCostPer1k = 0.0008;
-  const outputCostPer1k = 0.004;
+  // Pricing from env (defaults to Haiku 4.5: $0.80/M in, $4/M out)
+  const inputCostPer1k = parseFloat(process.env.MODEL_INPUT_COST_PER_1K || '0.0008');
+  const outputCostPer1k = parseFloat(process.env.MODEL_OUTPUT_COST_PER_1K || '0.004');
   return (tokensIn / 1000) * inputCostPer1k + (tokensOut / 1000) * outputCostPer1k;
 }
