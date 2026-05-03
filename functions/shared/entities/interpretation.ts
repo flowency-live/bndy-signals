@@ -25,12 +25,20 @@ export const TableSchema = z.object({
 });
 export type Table = z.infer<typeof TableSchema>;
 
+export const ExtractionErrorSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+  source: z.string().optional(),
+});
+export type ExtractionError = z.infer<typeof ExtractionErrorSchema>;
+
 export const DeterministicExtractionSchema = z.object({
   rawText: z.string().optional(),
   tables: z.array(TableSchema).optional(),
   dates: z.array(ExtractedDateSchema).optional(),
   urls: z.array(z.string()).optional(),
   ocrText: z.string().optional(),
+  errors: z.array(ExtractionErrorSchema).optional(),
   metadata: z
     .object({
       title: z.string().optional(),
@@ -75,6 +83,7 @@ export const InterpretationSchema = z.object({
   // Output
   claims: z.array(ClaimSchema),
   uncertainties: z.array(z.string()),
+  invalidClaimCount: z.number().int().nonnegative().optional(),
 
   // Lifecycle
   status: InterpretationStatusSchema,

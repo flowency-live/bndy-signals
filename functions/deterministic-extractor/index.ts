@@ -116,6 +116,11 @@ async function extractFromImage(signal: Signal): Promise<DeterministicExtraction
     const ocrText = lines.join('\n');
     console.log(`Textract extracted ${lines.length} lines, ${ocrText.length} chars`);
 
+    // If no text was extracted, this is a failure - don't send empty content to LLM
+    if (lines.length === 0 || ocrText.trim().length === 0) {
+      throw new Error('Textract returned no readable text from image');
+    }
+
     return {
       rawText: ocrText,
       ocrText,
@@ -125,15 +130,12 @@ async function extractFromImage(signal: Signal): Promise<DeterministicExtraction
       },
     };
   } catch (error) {
-    console.error('Textract OCR failed:', error);
-    // Return empty extraction on failure - let interpretation handle gracefully
-    return {
-      rawText: '[OCR extraction failed]',
-      metadata: {
-        extractedAt: new Date().toISOString(),
-        source: 'textract-failed',
-      },
-    };
+    const errorMessage = error instanceof Error ? error.message : 'Unknown Textract error';
+    console.error('Textract OCR failed:', errorMessage);
+
+    // Throw to trigger Step Functions failure handling
+    // This will set signal status to 'extraction_failed' via the failure handler
+    throw new Error(`OCR extraction failed: ${errorMessage}`);
   }
 }
 

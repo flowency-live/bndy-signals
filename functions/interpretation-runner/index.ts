@@ -42,6 +42,14 @@ interface InterpreterOutput {
   signalId: string;
   interpretationId: string;
   claims: Claim[];
+  invalidClaimCount: number;
+}
+
+interface ParseResult {
+  success: boolean;
+  output?: LLMOutput;
+  error?: string;
+  rawResponse: string;
 }
 
 // Schema for Claude's structured output
@@ -129,29 +137,97 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   };
 
   // Parse structured output
-  const llmOutput = parseStructuredOutput(rawResponse);
-
-  // Create interpretation
+  const parseResult = parseStructuredOutput(rawResponse);
   const interpretationId = `intp_${nanoid()}`;
   const now = new Date().toISOString();
 
-  // Convert LLM claims to Claim records, filtering out invalid claims
-  const claims: Claim[] = llmOutput.claims
-    .filter((llmClaim) => llmClaim.object || llmClaim.value) // Require object OR value
-    .map((llmClaim) => ({
-      claimId: `clm_${nanoid()}`,
-      claimType: llmClaim.type as ClaimType,
-      subject: llmClaim.subject,
-      predicate: llmClaim.predicate,
-      object: llmClaim.object,
-      value: llmClaim.value,
-      strength: llmClaim.strength as Strength,
-      strengthReasoning: llmClaim.reasoning,
+  // Handle parse failure - don't silently succeed with empty claims
+  if (!parseResult.success || !parseResult.output) {
+    const failedInterpretation = {
       interpretationId,
       signalId,
-      status: 'proposed' as const,
+      version: 1,
+      deterministicExtraction: extraction,
+      llmInterpretation: {
+        modelUsed: MODEL_ID,
+        modelProvider: 'bedrock',
+        promptVersion: PROMPT_VERSION,
+        reasoning: `Parse failed: ${parseResult.error}`,
+        rawResponse,
+      },
+      sourceCost,
+      claims: [],
+      uncertainties: ['LLM response could not be parsed as structured JSON'],
+      status: 'parse_failed' as const,
+      parseError: parseResult.error,
       createdAt: now,
-    }));
+    };
+
+    // Store failed interpretation for review
+    await ddb.send(
+      new PutCommand({
+        TableName: TABLE,
+        Item: {
+          PK: `INTP#${interpretationId}`,
+          SK: '#METADATA',
+          GSI1PK: 'STATUS#parse_failed',
+          GSI1SK: `INTP#${interpretationId}`,
+          ...failedInterpretation,
+        },
+      })
+    );
+
+    // Update signal status to indicate parse failure
+    await ddb.send(
+      new UpdateCommand({
+        TableName: TABLE,
+        Key: { PK: `SIGNAL#${signalId}`, SK: '#METADATA' },
+        UpdateExpression:
+          'SET #status = :status, GSI1PK = :gsi1pk, currentInterpretationId = :intpId',
+        ExpressionAttributeNames: { '#status': 'status' },
+        ExpressionAttributeValues: {
+          ':status': 'interpretation_failed',
+          ':gsi1pk': 'STATUS#interpretation_failed',
+          ':intpId': interpretationId,
+        },
+      })
+    );
+
+    // Throw error to trigger Step Functions failure handling
+    throw new Error(`Interpretation parse failed: ${parseResult.error}`);
+  }
+
+  const llmOutput = parseResult.output;
+
+  // Separate valid and invalid claims (track invalid, don't silently drop)
+  const validClaims: Claim[] = [];
+  const invalidClaims: Array<{ claim: z.infer<typeof LLMClaimSchema>; reason: string }> = [];
+
+  for (const llmClaim of llmOutput.claims) {
+    if (!llmClaim.object && !llmClaim.value) {
+      invalidClaims.push({ claim: llmClaim, reason: 'Missing object and value' });
+    } else {
+      validClaims.push({
+        claimId: `clm_${nanoid()}`,
+        claimType: llmClaim.type as ClaimType,
+        subject: llmClaim.subject,
+        predicate: llmClaim.predicate,
+        object: llmClaim.object,
+        value: llmClaim.value,
+        strength: llmClaim.strength as Strength,
+        strengthReasoning: llmClaim.reasoning,
+        interpretationId,
+        signalId,
+        status: 'proposed' as const,
+        createdAt: now,
+      });
+    }
+  }
+
+  // Log invalid claims for debugging
+  if (invalidClaims.length > 0) {
+    console.warn(`Filtered ${invalidClaims.length} invalid claims:`, JSON.stringify(invalidClaims));
+  }
 
   const interpretation: Interpretation = {
     interpretationId,
@@ -166,11 +242,18 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
       rawResponse,
     },
     sourceCost,
-    claims,
-    uncertainties: llmOutput.uncertainties,
+    claims: validClaims,
+    uncertainties: [
+      ...llmOutput.uncertainties,
+      ...(invalidClaims.length > 0 ? [`${invalidClaims.length} claim(s) filtered due to missing object/value`] : []),
+    ],
+    invalidClaimCount: invalidClaims.length,
     status: 'pending_review',
     createdAt: now,
   };
+
+  // Use validClaims for storage
+  const claims = validClaims;
 
   // Store interpretation
   await ddb.send(
@@ -249,10 +332,23 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     signalId,
     interpretationId,
     claims,
+    invalidClaimCount: invalidClaims.length,
   };
 };
 
+// Helper to compute the next May 15 from a given date for dynamic example
+function inferNextMay15(currentDate: string): string {
+  const date = new Date(currentDate);
+  const year = date.getMonth() >= 4 && date.getDate() > 15
+    ? date.getFullYear() + 1
+    : date.getFullYear();
+  return `${year}-05-15`;
+}
+
 function buildInterpretationPrompt(extraction: DeterministicExtraction, currentDate: string): string {
+  const exampleDate = inferNextMay15(currentDate);
+  const exampleYear = exampleDate.slice(0, 4);
+
   return `You are analyzing evidence about live music events.
 
 <context>
@@ -304,7 +400,7 @@ Strength levels:
 - moderate: Single clear indicator
 - weak: Implied or uncertain, needs corroboration
 
-Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM":
+Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM" (given current date ${currentDate}):
 {
   "summary": "Announcement for Stingray performing at The Rigger on May 15th",
   "claims": [
@@ -336,10 +432,10 @@ Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM":
       "type": "event_date",
       "subject": "Stingray Live",
       "predicate": "on_date",
-      "object": "2026-05-15",
-      "value": "2026-05-15",
+      "object": "${exampleDate}",
+      "value": "${exampleDate}",
       "strength": "weak",
-      "reasoning": "Date given as 'Thursday 15th May' - year inferred as next occurrence"
+      "reasoning": "Date given as 'Thursday 15th May' - year inferred as next occurrence from current date"
     },
     {
       "type": "event_time",
@@ -352,7 +448,7 @@ Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM":
     }
   ],
   "uncertainties": [
-    "Year not specified - inferred as 2026",
+    "Year not specified - inferred as ${exampleYear} from current date ${currentDate}",
     "Venue location unknown - cannot confirm which 'The Rigger' this is",
     "Unclear if 8PM is doors or start time"
   ]
@@ -361,7 +457,7 @@ Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM":
 Now analyze the content above and respond with JSON only.`;
 }
 
-function parseStructuredOutput(rawResponse: string): LLMOutput {
+function parseStructuredOutput(rawResponse: string): ParseResult {
   // Try to extract JSON from response
   let jsonStr = rawResponse;
 
@@ -379,14 +475,14 @@ function parseStructuredOutput(rawResponse: string): LLMOutput {
 
   try {
     const parsed = JSON.parse(jsonStr);
-    return LLMOutputSchema.parse(parsed);
+    const output = LLMOutputSchema.parse(parsed);
+    return { success: true, output, rawResponse };
   } catch (error) {
-    // Fallback: return empty claims with error noted
     console.error('Failed to parse LLM output:', error);
     return {
-      summary: 'Failed to parse structured output',
-      claims: [],
-      uncertainties: ['LLM response could not be parsed as structured JSON'],
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown parse error',
+      rawResponse,
     };
   }
 }
