@@ -177,23 +177,27 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
       })
     );
 
-    // Update signal status to indicate parse failure
+    // Update signal status to failed (schema-compliant)
     await ddb.send(
       new UpdateCommand({
         TableName: TABLE,
         Key: { PK: `SIGNAL#${signalId}`, SK: '#METADATA' },
         UpdateExpression:
-          'SET #status = :status, GSI1PK = :gsi1pk, currentInterpretationId = :intpId',
+          'SET #status = :status, GSI1PK = :gsi1pk, currentInterpretationId = :intpId, failedStep = :step, failedAt = :failedAt, failureReason = :reason',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: {
-          ':status': 'interpretation_failed',
-          ':gsi1pk': 'STATUS#interpretation_failed',
+          ':status': 'failed',
+          ':gsi1pk': 'STATUS#failed',
           ':intpId': interpretationId,
+          ':step': 'interpretation',
+          ':failedAt': now,
+          ':reason': `Parse failed: ${parseResult.error}`,
         },
       })
     );
 
     // Throw error to trigger Step Functions failure handling
+    // Note: failure handler will update status again (to same value), which is fine
     throw new Error(`Interpretation parse failed: ${parseResult.error}`);
   }
 
@@ -339,9 +343,11 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
 // Helper to compute the next May 15 from a given date for dynamic example
 function inferNextMay15(currentDate: string): string {
   const date = new Date(currentDate);
-  const year = date.getMonth() >= 4 && date.getDate() > 15
-    ? date.getFullYear() + 1
-    : date.getFullYear();
+  // Roll over to next year if: after May, or in May and past the 15th
+  const year =
+    date.getMonth() > 4 || (date.getMonth() === 4 && date.getDate() > 15)
+      ? date.getFullYear() + 1
+      : date.getFullYear();
   return `${year}-05-15`;
 }
 

@@ -150,6 +150,11 @@ async function extractFromText(signal: Signal): Promise<DeterministicExtraction>
 
   const rawContent = await s3Result.Body?.transformToString();
 
+  // Fail if content is empty or undefined - don't send empty content to LLM
+  if (!rawContent || rawContent.trim().length === 0) {
+    throw new Error('Text extraction returned empty content');
+  }
+
   return {
     rawText: rawContent,
     metadata: {

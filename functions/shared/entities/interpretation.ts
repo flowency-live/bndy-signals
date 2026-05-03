@@ -7,6 +7,7 @@ export const InterpretationStatusSchema = z.enum([
   'accepted',
   'challenged',
   'superseded',
+  'parse_failed',
 ]);
 export type InterpretationStatus = z.infer<typeof InterpretationStatusSchema>;
 
@@ -84,6 +85,7 @@ export const InterpretationSchema = z.object({
   claims: z.array(ClaimSchema),
   uncertainties: z.array(z.string()),
   invalidClaimCount: z.number().int().nonnegative().optional(),
+  parseError: z.string().optional(),
 
   // Lifecycle
   status: InterpretationStatusSchema,
