@@ -7,19 +7,26 @@ import {
   ClaimType,
   CanonicalArtist,
   CanonicalVenue,
-  CanonicalEvent,
   CanonicalEntity,
   EntityType,
   EvidenceLink,
 } from '../shared/entities';
 
-export interface EntityResolutionResult {
-  action: 'created' | 'linked';
+export interface EntityCandidate {
   entity: CanonicalEntity;
-  entityType: EntityType;
+  // Note: No similarity score. Matching is exact after normalization.
+  // The Brain handles fuzzy reasoning, not this code.
 }
 
-const SIMILARITY_THRESHOLD = 0.85;
+export interface EntityResolutionResult {
+  action: 'created' | 'linked' | 'candidates';
+  entity?: CanonicalEntity;
+  entityType: EntityType;
+  candidates?: EntityCandidate[];
+}
+
+// No similarity threshold - matching is exact after normalization.
+// The Brain (LLM) handles fuzzy matching during claim generation.
 
 export function extractEntityTypeFromClaim(claimType: ClaimType): EntityType | null {
   switch (claimType) {
@@ -29,10 +36,12 @@ export function extractEntityTypeFromClaim(claimType: ClaimType): EntityType | n
     case 'venue_hosts':
     case 'venue_exists':
       return 'venue';
+    // Event claims don't auto-resolve - events require aggregation from multiple claims
+    // (event_exists + event_date + venue relationship) and conversational ratification
     case 'event_exists':
     case 'event_date':
     case 'event_time':
-      return 'event';
+      return null;
     case 'relationship':
     case 'ticket_source':
     default:
@@ -49,51 +58,11 @@ export function normalizeEntityName(name: string): string {
   return trimmed;
 }
 
-export function calculateNameSimilarity(name1: string, name2: string): number {
-  const normalized1 = normalizeEntityName(name1);
-  const normalized2 = normalizeEntityName(name2);
-
-  if (normalized1 === normalized2) {
-    return 1;
-  }
-
-  if (normalized1.length === 0 && normalized2.length === 0) {
-    return 1;
-  }
-
-  if (normalized1.length === 0 || normalized2.length === 0) {
-    return 0;
-  }
-
-  // Levenshtein distance for fuzzy matching
-  const distance = levenshteinDistance(normalized1, normalized2);
-  const maxLength = Math.max(normalized1.length, normalized2.length);
-  return 1 - distance / maxLength;
-}
-
-function levenshteinDistance(str1: string, str2: string): number {
-  const m = str1.length;
-  const n = str2.length;
-
-  // Create 2D array with explicit initialization
-  const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    Array.from({ length: n + 1 }, () => 0)
-  );
-
-  for (let i = 0; i <= m; i++) dp[i]![0] = i;
-  for (let j = 0; j <= n; j++) dp[0]![j] = j;
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (str1[i - 1] === str2[j - 1]) {
-        dp[i]![j] = dp[i - 1]![j - 1]!;
-      } else {
-        dp[i]![j] = 1 + Math.min(dp[i - 1]![j]!, dp[i]![j - 1]!, dp[i - 1]![j - 1]!);
-      }
-    }
-  }
-
-  return dp[m]![n]!;
+// AI-native approach: exact match only after normalization.
+// The Brain (LLM) handles spelling variations during claim generation.
+// Fuzzy matching algorithms are legacy thinking - the AI should reason about matches.
+export function matchesEntityName(claimName: string, entityName: string): boolean {
+  return normalizeEntityName(claimName) === normalizeEntityName(entityName);
 }
 
 function generateEntityId(entityType: EntityType): string {
@@ -142,17 +111,12 @@ export function createDraftEntity(
         aliases: [],
       } as CanonicalVenue;
 
+    // NOTE: Event entities are not auto-created from claims.
+    // Events require aggregation from multiple claims (event_exists + event_date + venue)
+    // and conversational ratification. See ADR-004.
     case 'event':
-      return {
-        ...baseEntity,
-        entityType: 'event',
-        startDate: '', // Will be filled from event_date claim
-        venueId: '', // Will be filled from relationship
-        artistIds: [],
-      } as unknown as CanonicalEvent;
-
     default:
-      throw new Error(`Unknown entity type: ${entityType}`);
+      throw new Error(`Cannot auto-create ${entityType} entity - requires conversational ratification`);
   }
 }
 
@@ -181,13 +145,12 @@ export function linkClaimToEntity(
   };
 }
 
-export async function findExistingEntity(
+export async function findMatchingEntities(
   entityType: EntityType,
   name: string,
   ddb: DynamoDBDocumentClient
-): Promise<CanonicalEntity | null> {
+): Promise<EntityCandidate[]> {
   const TABLE = process.env.SIGNALS_TABLE!;
-  const normalizedName = normalizeEntityName(name);
 
   // Query entities of this type from GSI
   const result = await ddb.send(
@@ -202,24 +165,33 @@ export async function findExistingEntity(
   );
 
   if (!result.Items || result.Items.length === 0) {
-    return null;
+    return [];
   }
 
-  // Find best match by name similarity
-  let bestMatch: CanonicalEntity | null = null;
-  let bestSimilarity = 0;
+  // Find all exact matches (after normalization)
+  const candidates: EntityCandidate[] = [];
 
   for (const item of result.Items) {
     const entityName = item.name as string;
-    const similarity = calculateNameSimilarity(name, entityName);
 
-    if (similarity >= SIMILARITY_THRESHOLD && similarity > bestSimilarity) {
-      bestSimilarity = similarity;
-      bestMatch = item as unknown as CanonicalEntity;
+    if (matchesEntityName(name, entityName)) {
+      candidates.push({
+        entity: item as unknown as CanonicalEntity,
+      });
     }
   }
 
-  return bestMatch;
+  return candidates;
+}
+
+// Deprecated: use findMatchingEntities for candidate-based resolution
+export async function findExistingEntity(
+  entityType: EntityType,
+  name: string,
+  ddb: DynamoDBDocumentClient
+): Promise<CanonicalEntity | null> {
+  const candidates = await findMatchingEntities(entityType, name, ddb);
+  return candidates.length > 0 ? candidates[0]!.entity : null;
 }
 
 export async function resolveEntityFromClaim(
@@ -235,11 +207,21 @@ export async function resolveEntityFromClaim(
   const TABLE = process.env.SIGNALS_TABLE!;
   const now = new Date().toISOString();
 
-  // Find existing entity
-  const existingEntity = await findExistingEntity(entityType, claim.subject, ddb);
+  // Find matching entities
+  const candidates = await findMatchingEntities(entityType, claim.subject, ddb);
 
-  if (existingEntity) {
-    // Link claim to existing entity
+  // Multiple matches = ambiguous, return candidates for human resolution
+  if (candidates.length > 1) {
+    return {
+      action: 'candidates',
+      entityType,
+      candidates,
+    };
+  }
+
+  // Single match = auto-link
+  if (candidates.length === 1) {
+    const existingEntity = candidates[0]!.entity;
     const updatedEntity = linkClaimToEntity(existingEntity, claim, now);
 
     // Update in DynamoDB
@@ -265,7 +247,7 @@ export async function resolveEntityFromClaim(
     };
   }
 
-  // Create new draft entity
+  // No matches = create new draft entity
   const newEntity = createDraftEntity(entityType, claim, now);
 
   // Store in DynamoDB

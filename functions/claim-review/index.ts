@@ -18,6 +18,7 @@ const TABLE = process.env.SIGNALS_TABLE!;
 const ReviewActionSchema = z.object({
   action: z.enum(['accept', 'reject', 'challenge']),
   reason: z.string().optional(),
+  editedSubject: z.string().optional(),
   editedObject: z.string().optional(),
   editedValue: z.string().optional(),
 });
@@ -86,6 +87,10 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     case 'accept':
       newStatus = 'accepted';
       // Apply edits if provided
+      if (reviewAction.editedSubject !== undefined) {
+        updateExpression += ', subject = :subject';
+        expressionAttributeValues[':subject'] = reviewAction.editedSubject;
+      }
       if (reviewAction.editedObject !== undefined) {
         updateExpression += ', #object = :object';
         expressionAttributeNames['#object'] = 'object';
@@ -143,7 +148,13 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
   // If claim is accepted, trigger entity resolution
   if (newStatus === 'accepted') {
-    const claim = claimResult.Item as Claim;
+    // Apply edited values to claim for entity resolution
+    const claim: Claim = {
+      ...(claimResult.Item as Claim),
+      subject: reviewAction.editedSubject ?? (claimResult.Item as Claim).subject,
+      object: reviewAction.editedObject ?? (claimResult.Item as Claim).object,
+      value: reviewAction.editedValue ?? (claimResult.Item as Claim).value,
+    };
     entityResolution = await resolveEntityFromClaim(claim, ddb);
   }
 
@@ -155,11 +166,28 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   };
 
   if (entityResolution) {
-    response.entityResolution = {
-      action: entityResolution.action,
-      entityId: entityResolution.entity.entityId,
-      entityType: entityResolution.entityType,
-    };
+    if (entityResolution.action === 'candidates') {
+      // Multiple matches found - return candidates for human resolution via chat
+      response.entityResolution = {
+        action: 'candidates',
+        entityType: entityResolution.entityType,
+        candidates: entityResolution.candidates?.map(c => ({
+          entityId: c.entity.entityId,
+          name: c.entity.name,
+          // Include location for venues to help chat ask "Which Rigger?"
+          ...(c.entity.entityType === 'venue' && 'address' in c.entity && c.entity.address
+            ? { location: c.entity.address.city }
+            : {}),
+        })),
+      };
+    } else {
+      // Single match or new entity
+      response.entityResolution = {
+        action: entityResolution.action,
+        entityId: entityResolution.entity?.entityId,
+        entityType: entityResolution.entityType,
+      };
+    }
   }
 
   return {

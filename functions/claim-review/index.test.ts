@@ -276,4 +276,157 @@ describe('claim-review handler', () => {
     expect(body.status).toBe('challenged');
     expect(body.entityResolution).toBeUndefined();
   });
+
+  it('uses edited subject value for entity resolution', async () => {
+    // Mock GetCommand for claim lookup - original has typo "Stingry"
+    mockSend.mockResolvedValueOnce({
+      Item: {
+        PK: 'CLAIM#clm_abc12345',
+        SK: '#METADATA',
+        claimId: 'clm_abc12345',
+        signalId: 'sgnl_abc1234',
+        claimType: 'artist_performs',
+        subject: 'Stingry', // Original has typo
+        predicate: 'performs_at',
+        object: 'The Rigger',
+        strength: 'moderate',
+        status: 'proposed',
+      },
+    });
+
+    // Mock UpdateCommand for claim status update
+    mockSend.mockResolvedValueOnce({});
+
+    // Mock QueryCommand for entity resolution
+    mockSend.mockResolvedValueOnce({ Items: [] });
+
+    // Mock PutCommand - capture what entity is created
+    let createdEntity: any;
+    mockSend.mockImplementationOnce((cmd: any) => {
+      createdEntity = cmd.input?.Item;
+      return Promise.resolve({});
+    });
+
+    // Accept with corrected subject
+    const event = createEvent('sgnl_abc1234', 'clm_abc12345', {
+      action: 'accept',
+      editedSubject: 'Stingray', // User corrects the typo in subject
+    });
+
+    const result = await handler(event, mockContext, () => {});
+
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body || '{}');
+    expect(body.status).toBe('accepted');
+    expect(body.entityResolution).toBeDefined();
+    // The created entity should have the corrected name
+    expect(createdEntity?.name).toBe('Stingray');
+  });
+
+  it('uses edited object value for entity resolution', async () => {
+    // Mock GetCommand for claim lookup - venue claim with typo
+    mockSend.mockResolvedValueOnce({
+      Item: {
+        PK: 'CLAIM#clm_abc12345',
+        SK: '#METADATA',
+        claimId: 'clm_abc12345',
+        signalId: 'sgnl_abc1234',
+        claimType: 'venue_hosts',
+        subject: 'The Rigger', // Venue name
+        predicate: 'hosts',
+        object: 'Stingry Live', // Original event name with typo
+        strength: 'moderate',
+        status: 'proposed',
+      },
+    });
+
+    // Mock UpdateCommand for claim status update
+    mockSend.mockResolvedValueOnce({});
+
+    // Mock QueryCommand for entity resolution
+    mockSend.mockResolvedValueOnce({ Items: [] });
+
+    // Mock PutCommand - capture what entity is created
+    let createdEntity: any;
+    mockSend.mockImplementationOnce((cmd: any) => {
+      createdEntity = cmd.input?.Item;
+      return Promise.resolve({});
+    });
+
+    // Accept with corrected object
+    const event = createEvent('sgnl_abc1234', 'clm_abc12345', {
+      action: 'accept',
+      editedObject: 'Stingray Live', // User corrects the typo
+    });
+
+    const result = await handler(event, mockContext, () => {});
+
+    expect(result?.statusCode).toBe(200);
+    // Entity resolution creates venue from subject, not object
+    // So we verify the venue entity is created from the subject "The Rigger"
+    expect(createdEntity?.name).toBe('The Rigger');
+  });
+
+  it('returns candidates when multiple entities match', async () => {
+    // Mock GetCommand for claim lookup
+    mockSend.mockResolvedValueOnce({
+      Item: {
+        PK: 'CLAIM#clm_abc12345',
+        SK: '#METADATA',
+        claimId: 'clm_abc12345',
+        signalId: 'sgnl_abc1234',
+        claimType: 'venue_hosts',
+        subject: 'The Rigger',
+        predicate: 'hosts',
+        object: 'Stingray Live',
+        strength: 'moderate',
+        status: 'proposed',
+      },
+    });
+
+    // Mock UpdateCommand for claim status update
+    mockSend.mockResolvedValueOnce({});
+
+    // Mock QueryCommand - return multiple matching venues
+    mockSend.mockResolvedValueOnce({
+      Items: [
+        {
+          entityId: 'vnue_newcastl',
+          entityType: 'venue',
+          name: 'The Rigger',
+          aliases: [],
+          status: 'draft',
+          address: { city: 'Newcastle-under-Lyme', postcode: 'ST5 1AA', line1: '1 High St', country: 'UK' },
+          evidence: [{ claimId: 'clm_orig001', claimType: 'venue_exists', strength: 'moderate', linkedAt: '2026-05-01T12:00:00.000Z' }],
+          createdAt: '2026-05-01T12:00:00.000Z',
+          updatedAt: '2026-05-01T12:00:00.000Z',
+        },
+        {
+          entityId: 'vnue_bristol1',
+          entityType: 'venue',
+          name: 'The Rigger',
+          aliases: [],
+          status: 'draft',
+          address: { city: 'Bristol', postcode: 'BS1 1AA', line1: '2 Main St', country: 'UK' },
+          evidence: [{ claimId: 'clm_orig002', claimType: 'venue_exists', strength: 'moderate', linkedAt: '2026-05-01T12:00:00.000Z' }],
+          createdAt: '2026-05-01T12:00:00.000Z',
+          updatedAt: '2026-05-01T12:00:00.000Z',
+        },
+      ],
+    });
+
+    const event = createEvent('sgnl_abc1234', 'clm_abc12345', { action: 'accept' });
+
+    const result = await handler(event, mockContext, () => {});
+
+    expect(result?.statusCode).toBe(200);
+    const body = JSON.parse(result?.body || '{}');
+    expect(body.status).toBe('accepted');
+    expect(body.entityResolution).toBeDefined();
+    expect(body.entityResolution.action).toBe('candidates');
+    expect(body.entityResolution.candidates).toHaveLength(2);
+    // Verify candidates include location for disambiguation
+    expect(body.entityResolution.candidates[0].location).toBe('Newcastle-under-Lyme');
+    expect(body.entityResolution.candidates[1].location).toBe('Bristol');
+  });
 });
