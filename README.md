@@ -24,13 +24,24 @@ Memory update
 
 ## Architecture
 
-| Component | Purpose |
-|-----------|---------|
-| Step Functions | Signal workflow orchestration |
-| Lambda | Individual processing steps |
-| S3 | Raw signal storage |
-| DynamoDB | Signal, interpretation, claim metadata |
-| Bedrock | LLM interpretation |
+| Component | Purpose | Status |
+|-----------|---------|--------|
+| Step Functions | Signal workflow orchestration | ✅ `bndy-signals-workflow-dev` |
+| Lambda: signal-intake | POST /signals API | ✅ Supports text + image |
+| Lambda: deterministic-extractor | OCR + text extraction | ✅ Textract for images |
+| Lambda: interpretation-runner | LLM claim generation | ✅ Bedrock Haiku 4.5 |
+| Lambda: claim-review | POST review actions | ✅ Accept/reject/challenge |
+| S3 | Raw signal storage | ✅ `bndy-signals-dev-*` |
+| DynamoDB | Metadata + claims | ✅ `bndy-signals-dev` |
+| Bedrock | LLM interpretation | ✅ EU inference profile |
+
+## API Endpoints
+
+```
+POST https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev/signals
+GET  https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev/signals/{signalId}
+POST https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev/signals/{signalId}/claims/{claimId}/review
+```
 
 ## Key Entities
 
