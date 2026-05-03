@@ -30,6 +30,7 @@
     "@aws-sdk/client-s3": "^3.490.0",
     "@aws-sdk/client-sfn": "^3.490.0",
     "@aws-sdk/client-sqs": "^3.490.0",
+    "@aws-sdk/client-textract": "^3.1041.0",
     "@aws-sdk/lib-dynamodb": "^3.490.0",
     "@aws-sdk/s3-request-presigner": "^3.490.0",
     "nanoid": "^5.0.4",

@@ -49,6 +49,15 @@ export class WorkflowStack extends cdk.Stack {
     props.signalsBucket.grantRead(extractorFn);
     props.signalsTable.grantReadWriteData(extractorFn);
 
+    // Grant Textract access for OCR
+    extractorFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['textract:DetectDocumentText'],
+        resources: ['*'],
+      })
+    );
+
     // Interpretation runner Lambda
     const interpreterFn = new NodejsFunction(this, 'InterpreterFn', {
       functionName: `bndy-signals-interpreter-${props.stage}`,
