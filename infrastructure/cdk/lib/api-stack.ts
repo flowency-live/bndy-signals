@@ -58,6 +58,24 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
+    // Claim review Lambda (POST /signals/{signalId}/claims/{claimId}/review)
+    const claimReviewFn = new NodejsFunction(this, 'ClaimReviewFn', {
+      functionName: `bndy-signals-claim-review-${props.stage}`,
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/claim-review/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: {
+        SIGNALS_TABLE: props.signalsTable.tableName,
+        STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    });
+
     // Grant permissions
     props.signalsBucket.grantReadWrite(signalIntakeFn);
     props.signalsTable.grantReadWriteData(signalIntakeFn);
@@ -65,6 +83,8 @@ export class ApiStack extends cdk.Stack {
 
     props.signalsBucket.grantRead(signalGetFn);
     props.signalsTable.grantReadData(signalGetFn);
+
+    props.signalsTable.grantReadWriteData(claimReviewFn);
 
     // API Gateway
     const api = new apigateway.RestApi(this, 'SignalsApi', {
@@ -91,6 +111,15 @@ export class ApiStack extends cdk.Stack {
     signal.addMethod(
       'GET',
       new apigateway.LambdaIntegration(signalGetFn)
+    );
+
+    // POST /signals/{signalId}/claims/{claimId}/review
+    const claims = signal.addResource('claims');
+    const claim = claims.addResource('{claimId}');
+    const review = claim.addResource('review');
+    review.addMethod(
+      'POST',
+      new apigateway.LambdaIntegration(claimReviewFn)
     );
 
     // Outputs
