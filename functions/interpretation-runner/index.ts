@@ -22,7 +22,12 @@ import {
   Claim,
   ClaimType,
   Strength,
+  EventCandidate,
+  ClaimReference,
+  Ambiguity,
+  AmbiguityType,
 } from '../shared/entities';
+import { findMatchingEntities, EntityCandidate } from '../entity-resolver';
 
 const bedrock = new BedrockRuntimeClient({});
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
@@ -43,6 +48,7 @@ interface InterpreterOutput {
   interpretationId: string;
   claims: Claim[];
   invalidClaimCount: number;
+  eventCandidateIds: string[];
 }
 
 interface ParseResult {
@@ -72,13 +78,42 @@ const LLMClaimSchema = z.object({
   reasoning: z.string(),
 });
 
+// AI-native: LLM proposes event candidates directly, not just atomic claims
+const LLMEventCandidateSchema = z.object({
+  proposedName: z.string(),
+  proposedDate: z.string().optional(),
+  proposedTime: z.string().optional(),
+  proposedVenueName: z.string().optional(),
+  proposedArtistNames: z.array(z.string()),
+  reasoning: z.string(),
+  ambiguities: z.array(z.string()),
+  sourceClaimRefs: z.array(z.string()), // References to claim types used
+});
+
+// AI-native: LLM identifies clarification questions
+const LLMClarificationQuestionSchema = z.object({
+  questionType: z.enum([
+    'entity_match',
+    'date_confirm',
+    'venue_location',
+    'artist_identity',
+  ]),
+  question: z.string(),
+  options: z.array(z.string()).optional(),
+  relatedClaimTypes: z.array(z.string()),
+});
+
 const LLMOutputSchema = z.object({
   summary: z.string(),
   claims: z.array(LLMClaimSchema),
+  eventCandidates: z.array(LLMEventCandidateSchema).optional(),
+  clarificationQuestions: z.array(LLMClarificationQuestionSchema).optional(),
   uncertainties: z.array(z.string()),
 });
 
 type LLMOutput = z.infer<typeof LLMOutputSchema>;
+type LLMEventCandidate = z.infer<typeof LLMEventCandidateSchema>;
+type LLMClarificationQuestion = z.infer<typeof LLMClarificationQuestionSchema>;
 
 export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   event
@@ -233,6 +268,94 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     console.warn(`Filtered ${invalidClaims.length} invalid claims:`, JSON.stringify(invalidClaims));
   }
 
+  // Process AI-proposed event candidates with entity resolution
+  const eventCandidateIds: string[] = [];
+  const eventCandidates: EventCandidate[] = [];
+
+  if (llmOutput.eventCandidates && llmOutput.eventCandidates.length > 0) {
+    for (const llmCandidate of llmOutput.eventCandidates) {
+      const candidateId = `cand_${nanoid()}`;
+      eventCandidateIds.push(candidateId);
+
+      // Map LLM ambiguities to Ambiguity schema
+      const ambiguities: Ambiguity[] = llmCandidate.ambiguities.map((desc) => ({
+        ambiguityType: inferAmbiguityType(desc),
+        description: desc,
+        affectedClaimIds: [],
+      }));
+
+      // Build source claim references
+      const sourceClaims: ClaimReference[] = validClaims
+        .filter(c => llmCandidate.sourceClaimRefs.includes(c.claimType))
+        .map(c => ({
+          claimId: c.claimId,
+          claimType: c.claimType,
+          value: c.value || c.object || c.subject,
+          status: 'proposed' as const,
+        }));
+
+      // Entity resolution for venue
+      let proposedVenueId: string | undefined;
+      if (llmCandidate.proposedVenueName) {
+        const venueMatches = await findMatchingEntities('venue', llmCandidate.proposedVenueName, ddb);
+        const firstVenueMatch = venueMatches[0];
+        if (venueMatches.length === 1 && firstVenueMatch) {
+          proposedVenueId = firstVenueMatch.entity.entityId;
+        } else if (venueMatches.length > 1) {
+          // Multiple matches - add ambiguity for chat resolution
+          const locations = venueMatches.map(m => {
+            const venue = m.entity as { address?: { city?: string } };
+            return venue.address?.city || 'unknown location';
+          }).join(', ');
+          ambiguities.push({
+            ambiguityType: 'entity_match',
+            description: `Multiple venues match "${llmCandidate.proposedVenueName}": ${locations}`,
+            affectedClaimIds: [],
+          });
+        }
+      }
+
+      // Entity resolution for artists
+      const proposedArtistIds: string[] = [];
+      for (const artistName of llmCandidate.proposedArtistNames) {
+        const artistMatches = await findMatchingEntities('artist', artistName, ddb);
+        const firstArtistMatch = artistMatches[0];
+        if (artistMatches.length === 1 && firstArtistMatch) {
+          proposedArtistIds.push(firstArtistMatch.entity.entityId);
+        } else if (artistMatches.length > 1) {
+          ambiguities.push({
+            ambiguityType: 'entity_match',
+            description: `Multiple artists match "${artistName}"`,
+            affectedClaimIds: [],
+          });
+        }
+        // If no match, artist will be created when candidate is ratified
+      }
+
+      const eventCandidate: EventCandidate = {
+        candidateId,
+        candidateType: 'event',
+        signalId,
+        interpretationId,
+        proposedName: llmCandidate.proposedName,
+        proposedDate: llmCandidate.proposedDate,
+        proposedTime: llmCandidate.proposedTime,
+        proposedVenueId,
+        proposedArtistIds,
+        sourceClaims,
+        completeness: calculateCandidateCompleteness(llmCandidate),
+        missingFields: getMissingFields(llmCandidate),
+        ambiguities,
+        verificationStatus: 'unverified',
+        status: 'proposed',
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      eventCandidates.push(eventCandidate);
+    }
+  }
+
   const interpretation: Interpretation = {
     interpretationId,
     signalId,
@@ -252,6 +375,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
       ...(invalidClaims.length > 0 ? [`${invalidClaims.length} claim(s) filtered due to missing object/value`] : []),
     ],
     invalidClaimCount: invalidClaims.length,
+    eventCandidateIds: eventCandidateIds.length > 0 ? eventCandidateIds : undefined,
     status: 'pending_review',
     createdAt: now,
   };
@@ -300,6 +424,35 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     }
   }
 
+  // Store event candidates (AI-proposed)
+  if (eventCandidates.length > 0) {
+    const candidateItems = eventCandidates.map((candidate) => ({
+      PutRequest: {
+        Item: {
+          PK: `CANDIDATE#${candidate.candidateId}`,
+          SK: '#METADATA',
+          GSI1PK: `STATUS#${candidate.status}`,
+          GSI1SK: `CANDIDATE#${candidate.candidateId}`,
+          GSI2PK: `SIGNAL#${signalId}`,
+          GSI2SK: `CANDIDATE#${candidate.candidateId}`,
+          ...candidate,
+        },
+      },
+    }));
+
+    // BatchWrite in chunks of 25
+    for (let i = 0; i < candidateItems.length; i += 25) {
+      const batch = candidateItems.slice(i, i + 25);
+      await ddb.send(
+        new BatchWriteCommand({
+          RequestItems: { [TABLE]: batch },
+        })
+      );
+    }
+
+    console.log(`Stored ${eventCandidates.length} AI-proposed event candidates`);
+  }
+
   // Link interpretation to signal
   await ddb.send(
     new PutCommand({
@@ -310,6 +463,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
         interpretationId,
         version: 1,
         claimCount: claims.length,
+        eventCandidateCount: eventCandidates.length,
         createdAt: now,
       },
     })
@@ -337,8 +491,44 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     interpretationId,
     claims,
     invalidClaimCount: invalidClaims.length,
+    eventCandidateIds,
   };
 };
+
+// Helper to infer ambiguity type from description
+function inferAmbiguityType(description: string): AmbiguityType {
+  const lower = description.toLowerCase();
+  if (lower.includes('venue') || lower.includes('location') || lower.includes('which')) {
+    return 'entity_match';
+  }
+  if (lower.includes('year') || lower.includes('date') || lower.includes('inferred')) {
+    return 'date_uncertain';
+  }
+  if (lower.includes('conflict') || lower.includes('disagree')) {
+    return 'conflicting';
+  }
+  return 'incomplete';
+}
+
+// Calculate completeness from LLM candidate
+function calculateCandidateCompleteness(candidate: LLMEventCandidate): 'complete' | 'partial' {
+  const hasName = Boolean(candidate.proposedName);
+  const hasDate = Boolean(candidate.proposedDate);
+  const hasVenue = Boolean(candidate.proposedVenueName);
+  const hasArtists = candidate.proposedArtistNames.length > 0;
+
+  return hasName && hasDate && hasVenue && hasArtists ? 'complete' : 'partial';
+}
+
+// Get missing fields from LLM candidate
+function getMissingFields(candidate: LLMEventCandidate): string[] {
+  const missing: string[] = [];
+  if (!candidate.proposedName) missing.push('name');
+  if (!candidate.proposedDate) missing.push('date');
+  if (!candidate.proposedVenueName) missing.push('venue');
+  if (candidate.proposedArtistNames.length === 0) missing.push('artists');
+  return missing;
+}
 
 // Helper to compute the next May 15 from a given date for dynamic example
 function inferNextMay15(currentDate: string): string {
@@ -392,8 +582,31 @@ You MUST respond with valid JSON in this exact format:
       "reasoning": "Why you believe this claim at this strength"
     }
   ],
+  "eventCandidates": [
+    {
+      "proposedName": "Full event name",
+      "proposedDate": "YYYY-MM-DD if known",
+      "proposedTime": "HH:MM if known",
+      "proposedVenueName": "Venue name as stated in evidence",
+      "proposedArtistNames": ["Artist names as stated"],
+      "reasoning": "Why you propose this event based on the evidence",
+      "ambiguities": ["Any uncertainties about this event"],
+      "sourceClaimRefs": ["event_exists", "event_date", etc]
+    }
+  ],
+  "clarificationQuestions": [
+    {
+      "questionType": "entity_match|date_confirm|venue_location|artist_identity",
+      "question": "Human-readable question to resolve ambiguity",
+      "options": ["Option 1", "Option 2"],
+      "relatedClaimTypes": ["venue_hosts"]
+    }
+  ],
   "uncertainties": ["Things you are not sure about"]
 }
+
+IMPORTANT: If this evidence describes an event, you MUST include an eventCandidates entry.
+If there are ambiguities (like venue location unclear), include clarificationQuestions.
 
 Claim types:
 - event_exists: An event is happening (subject=event name, object=description)
@@ -455,6 +668,26 @@ Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM" (given current d
       "value": "20:00",
       "strength": "moderate",
       "reasoning": "Time clearly stated as 8PM"
+    }
+  ],
+  "eventCandidates": [
+    {
+      "proposedName": "Stingray Live at The Rigger",
+      "proposedDate": "${exampleDate}",
+      "proposedTime": "20:00",
+      "proposedVenueName": "The Rigger",
+      "proposedArtistNames": ["Stingray"],
+      "reasoning": "The poster announces a live music event with artist, venue, date and time clearly stated",
+      "ambiguities": ["Venue location not specified - multiple venues may share this name", "Year inferred from current date"],
+      "sourceClaimRefs": ["event_exists", "artist_performs", "venue_hosts", "event_date", "event_time"]
+    }
+  ],
+  "clarificationQuestions": [
+    {
+      "questionType": "venue_location",
+      "question": "Which 'The Rigger' is this event at?",
+      "options": [],
+      "relatedClaimTypes": ["venue_hosts"]
     }
   ],
   "uncertainties": [

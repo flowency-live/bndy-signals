@@ -81,11 +81,17 @@ export const InterpretationSchema = z.object({
   // Cost tracking (REQUIRED)
   sourceCost: SourceCostSchema,
 
-  // Output
+  // Output - claims
   claims: z.array(ClaimSchema),
   uncertainties: z.array(z.string()),
   invalidClaimCount: z.number().int().nonnegative().optional(),
   parseError: z.string().optional(),
+
+  // Output - AI-native event candidates (proposed by LLM)
+  eventCandidateIds: z.array(z.string().regex(/^cand_[a-zA-Z0-9]{8}$/)).optional(),
+
+  // Output - clarification requests (identified by LLM)
+  clarificationRequestIds: z.array(z.string().regex(/^clar_[a-zA-Z0-9]{8}$/)).optional(),
 
   // Lifecycle
   status: InterpretationStatusSchema,

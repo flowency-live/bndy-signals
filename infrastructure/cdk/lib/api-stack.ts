@@ -76,6 +76,24 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
+    // Event candidate API Lambda (GET/POST /candidates)
+    const eventCandidateApiFn = new NodejsFunction(this, 'EventCandidateApiFn', {
+      functionName: `bndy-signals-event-candidate-api-${props.stage}`,
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/event-candidate-api/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: {
+        SIGNALS_TABLE: props.signalsTable.tableName,
+        STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    });
+
     // Grant permissions
     props.signalsBucket.grantReadWrite(signalIntakeFn);
     props.signalsTable.grantReadWriteData(signalIntakeFn);
@@ -85,6 +103,8 @@ export class ApiStack extends cdk.Stack {
     props.signalsTable.grantReadData(signalGetFn);
 
     props.signalsTable.grantReadWriteData(claimReviewFn);
+
+    props.signalsTable.grantReadWriteData(eventCandidateApiFn);
 
     // API Gateway
     const api = new apigateway.RestApi(this, 'SignalsApi', {
@@ -120,6 +140,35 @@ export class ApiStack extends cdk.Stack {
     review.addMethod(
       'POST',
       new apigateway.LambdaIntegration(claimReviewFn)
+    );
+
+    // Event Candidate API routes
+    // GET /candidates
+    const candidates = api.root.addResource('candidates');
+    candidates.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(eventCandidateApiFn)
+    );
+
+    // GET /candidates/{candidateId}
+    const candidate = candidates.addResource('{candidateId}');
+    candidate.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(eventCandidateApiFn)
+    );
+
+    // POST /candidates/{candidateId}/ratify
+    const ratify = candidate.addResource('ratify');
+    ratify.addMethod(
+      'POST',
+      new apigateway.LambdaIntegration(eventCandidateApiFn)
+    );
+
+    // POST /candidates/{candidateId}/reject
+    const reject = candidate.addResource('reject');
+    reject.addMethod(
+      'POST',
+      new apigateway.LambdaIntegration(eventCandidateApiFn)
     );
 
     // Outputs
