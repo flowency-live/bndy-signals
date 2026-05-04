@@ -609,15 +609,15 @@ You MUST respond with valid JSON in this exact format:
 IMPORTANT: If this evidence describes an event, you MUST include an eventCandidates entry.
 If there are ambiguities (like venue location unclear), include clarificationQuestions.
 
-Claim types:
-- event_exists: An event is happening (subject=event name, object=description)
+Claim types (predicate is REQUIRED for all types):
+- event_exists: An event is happening (subject=event name, predicate=exists, object=description)
 - artist_performs: An artist is performing (subject=artist, predicate=performs_at, object=event/venue)
 - venue_hosts: A venue is hosting (subject=venue, predicate=hosts, object=event)
 - event_date: Event has a date (subject=event, predicate=on_date, value=YYYY-MM-DD)
 - event_time: Event has a time (subject=event, predicate=at_time, value=HH:MM)
 - ticket_source: Tickets available (subject=event, predicate=tickets_at, object=source name, value=URL)
-- artist_exists: Artist mentioned (subject=artist name, object=any identifiers)
-- venue_exists: Venue mentioned (subject=venue name, object=location if known)
+- artist_exists: Artist mentioned (subject=artist name, predicate=is_artist, object=genre/type if known)
+- venue_exists: Venue mentioned (subject=venue name, predicate=is_venue, object=location if known)
 
 Strength levels:
 - strong: Multiple clear indicators or authoritative source
@@ -669,6 +669,22 @@ Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM" (given current d
       "value": "20:00",
       "strength": "moderate",
       "reasoning": "Time clearly stated as 8PM"
+    },
+    {
+      "type": "artist_exists",
+      "subject": "Stingray",
+      "predicate": "is_artist",
+      "object": "Live music performer",
+      "strength": "moderate",
+      "reasoning": "Artist name clearly stated in event announcement"
+    },
+    {
+      "type": "venue_exists",
+      "subject": "The Rigger",
+      "predicate": "is_venue",
+      "object": "Live music venue",
+      "strength": "moderate",
+      "reasoning": "Venue name stated but location not specified"
     }
   ],
   "eventCandidates": [
