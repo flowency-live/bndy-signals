@@ -43,7 +43,7 @@ interface InterpreterInput {
   extraction: DeterministicExtraction;
 }
 
-// Simplified event candidate data for pack-builder
+// Simplified event candidate data for pack-builder and clarification-generator
 interface EventCandidateForPack {
   candidateId: string;
   proposedName: string;
@@ -51,6 +51,11 @@ interface EventCandidateForPack {
   proposedVenueName?: string;
   proposedArtistNames: string[];
   sourceClaimIds: string[];  // Claims linked to this candidate
+  ambiguities: Array<{
+    ambiguityType: string;
+    description: string;
+    affectedClaimIds: string[];
+  }>;
 }
 
 interface InterpreterOutput {
@@ -500,8 +505,8 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     })
   );
 
-  // Build event candidates data for pack-builder
-  // Use eventCandidates array which has sourceClaims with claimIds
+  // Build event candidates data for pack-builder and clarification-generator
+  // Use eventCandidates array which has sourceClaims with claimIds and ambiguities
   const eventCandidatesForPack: EventCandidateForPack[] = eventCandidates.map((candidate) => ({
     candidateId: candidate.candidateId,
     proposedName: candidate.proposedName,
@@ -513,6 +518,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
       (lc) => lc.proposedName === candidate.proposedName
     )?.proposedArtistNames || [],
     sourceClaimIds: candidate.sourceClaims.map((sc) => sc.claimId),
+    ambiguities: candidate.ambiguities,
   }));
 
   return {
@@ -579,15 +585,19 @@ function buildInterpretationPrompt(extraction: DeterministicExtraction, currentD
 
 <context>
 Current date: ${currentDate}
-Date inference rules:
-- If year is explicitly stated, use it with moderate/strong confidence
-- If year is NOT stated, infer the next occurrence BUT mark strength as "weak" and add to uncertainties
-- Never present an inferred year as certain fact
-- Promo posted months ahead may reference next year - be conservative
+
+CRITICAL - Date inference rules (YOU MUST ALWAYS INFER DATES):
+- "next saturday", "this saturday", "saturday" → Calculate the actual date from ${currentDate}
+- "next friday", "this friday", etc. → Same - always convert to YYYY-MM-DD format
+- "15th May", "May 15" without year → Use the next occurrence from ${currentDate}
+- Mark inferred dates as strength "weak" and note in uncertainties
+- You MUST provide proposedDate in YYYY-MM-DD format whenever ANY date reference exists
+- "next saturday" from ${currentDate} = calculate it (e.g., if today is Sunday, next Saturday is 6 days away)
 
 Time handling:
-- Times on posters/gig info are always the event START time (not "doors")
-- These are grassroots venues (pubs, small clubs) - there is no "doors time" concept
+- If no time given, leave proposedTime empty (do NOT guess)
+- Times on posters are always event START time (not "doors")
+- These are grassroots venues - no "doors time" concept
 </context>
 
 This content was extracted from a signal (user-submitted evidence):
@@ -626,7 +636,7 @@ You MUST respond with valid JSON in this exact format:
   ],
   "clarificationQuestions": [
     {
-      "questionType": "entity_match|date_confirm|venue_location|artist_identity",
+      "questionType": "entity_match|date_confirm|venue_location|artist_identity|event_time",
       "question": "Human-readable question to resolve ambiguity",
       "options": ["Option 1", "Option 2"],
       "relatedClaimTypes": ["venue_hosts"]

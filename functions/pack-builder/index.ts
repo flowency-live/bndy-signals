@@ -49,10 +49,31 @@ export interface PackBuilderInput {
     proposedVenueName?: string;
     proposedArtistNames: string[];
     sourceClaimIds: string[];  // Claims specifically linked to this candidate
+    ambiguities: Array<{
+      ambiguityType: string;
+      description: string;
+      affectedClaimIds: string[];
+    }>;
   }>;
 }
 
 export interface PackBuilderOutput {
+  // Pass through for clarification-generator
+  signalId: string;
+  interpretationId: string;
+  candidates: Array<{
+    candidateId: string;
+    proposedName: string;
+    proposedDate?: string;
+    proposedVenueName?: string;
+    proposedArtistNames?: string[];
+    ambiguities: Array<{
+      ambiguityType: string;
+      description: string;
+      affectedClaimIds: string[];
+    }>;
+  }>;
+  // Pack-builder specific output
   packIds: string[];
   candidatePackLinks: Array<{
     candidateId: string;
@@ -337,7 +358,20 @@ export const handler: Handler<PackBuilderInput, PackBuilderOutput> = async (even
     });
   }
 
+  // Build candidates for clarification-generator
+  const candidatesForClarification = eventCandidates.map((c) => ({
+    candidateId: c.candidateId,
+    proposedName: c.proposedName,
+    proposedDate: c.proposedDate,
+    proposedVenueName: c.proposedVenueName,
+    proposedArtistNames: c.proposedArtistNames,
+    ambiguities: c.ambiguities || [],
+  }));
+
   return {
+    signalId,
+    interpretationId,
+    candidates: candidatesForClarification,
     packIds,
     candidatePackLinks,
   };
