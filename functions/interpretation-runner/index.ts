@@ -50,6 +50,7 @@ interface EventCandidateForPack {
   proposedDate?: string;
   proposedVenueName?: string;
   proposedArtistNames: string[];
+  sourceClaimIds: string[];  // Claims linked to this candidate
 }
 
 interface InterpreterOutput {
@@ -499,15 +500,19 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
   );
 
   // Build event candidates data for pack-builder
-  const eventCandidatesForPack: EventCandidateForPack[] = (llmOutput.eventCandidates || []).map(
-    (llmCandidate, index) => ({
-      candidateId: eventCandidateIds[index],
-      proposedName: llmCandidate.proposedName,
-      proposedDate: llmCandidate.proposedDate,
-      proposedVenueName: llmCandidate.proposedVenueName,
-      proposedArtistNames: llmCandidate.proposedArtistNames,
-    })
-  );
+  // Use eventCandidates array which has sourceClaims with claimIds
+  const eventCandidatesForPack: EventCandidateForPack[] = eventCandidates.map((candidate) => ({
+    candidateId: candidate.candidateId,
+    proposedName: candidate.proposedName,
+    proposedDate: candidate.proposedDate,
+    proposedVenueName: llmOutput.eventCandidates?.find(
+      (lc) => lc.proposedName === candidate.proposedName
+    )?.proposedVenueName,
+    proposedArtistNames: llmOutput.eventCandidates?.find(
+      (lc) => lc.proposedName === candidate.proposedName
+    )?.proposedArtistNames || [],
+    sourceClaimIds: candidate.sourceClaims.map((sc) => sc.claimId),
+  }));
 
   return {
     signalId,

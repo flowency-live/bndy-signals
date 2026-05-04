@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Use vi.hoisted for proper mock hoisting
-const { mockSend } = vi.hoisted(() => ({
-  mockSend: vi.fn(),
-}));
+const { mockSend } = vi.hoisted(() => {
+  // Set env early for lazy getTable()
+  process.env.SIGNALS_TABLE = 'test-signals-table';
+  return { mockSend: vi.fn() };
+});
 
 // Mock AWS SDK
 vi.mock('@aws-sdk/client-dynamodb', () => ({
@@ -23,12 +25,53 @@ vi.mock('@aws-sdk/lib-dynamodb', () => ({
 import {
   handler,
   buildProposition,
+  buildPropositionKey,
   findMatchingPack,
   createPack,
   updatePackWithNewEvidence,
   PackBuilderInput,
   PackBuilderOutput,
 } from './index';
+
+describe('buildPropositionKey', () => {
+  it('should normalize proposition to lowercase and strip prefixes', () => {
+    const proposition = 'The Vaccines plays at O2 Academy Bristol on 2026-06-20';
+    const key = buildPropositionKey(proposition);
+    // "The" and "O2" are stripped, "plays" → "play"
+    expect(key).toBe('vaccines play at academy bristol on 2026-06-20');
+  });
+
+  it('should collapse multiple spaces', () => {
+    const proposition = 'Stingray  plays   at  The   Rigger';
+    const key = buildPropositionKey(proposition);
+    // Spaces collapsed, "The" stripped, "plays" → "play"
+    expect(key).toBe('stingray play at rigger');
+  });
+
+  it('should strip "the" prefix from venue names', () => {
+    const key1 = buildPropositionKey('Stingray plays at The Rigger on 2026-05-15');
+    const key2 = buildPropositionKey('Stingray plays at Rigger on 2026-05-15');
+    expect(key1).toBe(key2);
+  });
+
+  it('should normalize "play" vs "plays"', () => {
+    const key1 = buildPropositionKey('Stingray plays at The Rigger');
+    const key2 = buildPropositionKey('Stingray play at The Rigger');
+    expect(key1).toBe(key2);
+  });
+
+  it('should match propositions with different capitalization', () => {
+    const key1 = buildPropositionKey('THE VACCINES plays at O2 ACADEMY BRISTOL');
+    const key2 = buildPropositionKey('The Vaccines plays at O2 Academy Bristol');
+    expect(key1).toBe(key2);
+  });
+
+  it('should strip common venue prefixes like O2', () => {
+    const key1 = buildPropositionKey('Band plays at O2 Academy Bristol');
+    const key2 = buildPropositionKey('Band plays at Academy Bristol');
+    expect(key1).toBe(key2);
+  });
+});
 
 describe('buildProposition', () => {
   it('should build proposition for event candidate', () => {
@@ -93,6 +136,7 @@ describe('findMatchingPack', () => {
     const existingPack = {
       packId: 'pack_existing',
       proposition: 'Stingray plays at The Rigger on 2026-05-15',
+      propositionKey: 'stingray play at rigger on 2026-05-15',
       propositionType: 'event',
       signalIds: ['sgnl_previous'],
       interpretationIds: ['intp_previous'],
@@ -137,6 +181,7 @@ describe('createPack', () => {
 
     expect(result.packId).toMatch(/^pack_[a-zA-Z0-9]{8}$/);
     expect(result.proposition).toBe(input.proposition);
+    expect(result.propositionKey).toBe('stingray play at rigger on 2026-05-15');
     expect(result.propositionType).toBe('event');
     expect(result.signalIds).toEqual(['sgnl_abc12345']);
     expect(result.corroborationStrength).toBe('weak');
@@ -156,6 +201,7 @@ describe('updatePackWithNewEvidence', () => {
     const existingPack = {
       packId: 'pack_existing',
       proposition: 'Stingray plays at The Rigger on 2026-05-15',
+      propositionKey: 'stingray play at rigger on 2026-05-15',
       propositionType: 'event' as const,
       signalIds: ['sgnl_previous'],
       interpretationIds: ['intp_previous'],
@@ -189,6 +235,7 @@ describe('updatePackWithNewEvidence', () => {
     const existingPack = {
       packId: 'pack_existing',
       proposition: 'Stingray plays at The Rigger on 2026-05-15',
+      propositionKey: 'stingray play at rigger on 2026-05-15',
       propositionType: 'event' as const,
       signalIds: ['sgnl_same'],
       interpretationIds: ['intp_previous'],
@@ -220,6 +267,7 @@ describe('updatePackWithNewEvidence', () => {
     const existingPack = {
       packId: 'pack_existing',
       proposition: 'Stingray plays at The Rigger on 2026-05-15',
+      propositionKey: 'stingray play at rigger on 2026-05-15',
       propositionType: 'event' as const,
       signalIds: ['sgnl_1', 'sgnl_2'],
       interpretationIds: ['intp_1', 'intp_2'],
@@ -278,6 +326,7 @@ describe('handler', () => {
           proposedDate: '2026-05-15',
           proposedVenueName: 'The Rigger',
           proposedArtistNames: ['Stingray'],
+          sourceClaimIds: ['clm_1', 'clm_2', 'clm_3', 'clm_4'],
         },
       ],
     };
@@ -310,6 +359,7 @@ describe('handler', () => {
     const existingPack = {
       packId: 'pack_existing',
       proposition: 'Stingray plays at The Rigger on 2026-05-15',
+      propositionKey: 'stingray play at rigger on 2026-05-15',
       propositionType: 'event',
       signalIds: ['sgnl_previous'],
       interpretationIds: ['intp_previous'],
@@ -344,6 +394,7 @@ describe('handler', () => {
           proposedDate: '2026-05-15',
           proposedVenueName: 'The Rigger',
           proposedArtistNames: ['Stingray'],
+          sourceClaimIds: ['clm_new1', 'clm_new2'],
         },
       ],
     };

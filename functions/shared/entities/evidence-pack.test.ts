@@ -51,6 +51,7 @@ describe('EvidencePackSchema', () => {
   const validPack = {
     packId: 'pack_a1b2c3d4',
     proposition: 'Stingray plays at The Rigger on 2026-05-15',
+    propositionKey: 'stingray play at rigger on 2026-05-15',
     propositionType: 'event',
     signalIds: ['sgnl_abc12345'],
     interpretationIds: ['intp_def67890'],
@@ -188,6 +189,7 @@ describe('Evidence Pack cognitive model', () => {
     const eventPack = {
       packId: 'pack_event123',
       proposition: 'Metallica plays at Wembley Stadium on 2026-05-15',
+      propositionKey: 'metallica play at wembley stadium on 2026-05-15',
       propositionType: 'event',
       signalIds: ['sgnl_abc12345', 'sgnl_def67890'],
       interpretationIds: ['intp_111', 'intp_222'],
@@ -208,6 +210,7 @@ describe('Evidence Pack cognitive model', () => {
     const relationshipPack = {
       packId: 'pack_rel12345',
       proposition: 'Stingray regularly performs at The Rigger',
+      propositionKey: 'stingray regularly performs at rigger',
       propositionType: 'artist_venue',
       signalIds: ['sgnl_1', 'sgnl_2', 'sgnl_3'],
       interpretationIds: ['intp_1', 'intp_2', 'intp_3'],
@@ -222,5 +225,25 @@ describe('Evidence Pack cognitive model', () => {
     };
 
     expect(() => EvidencePackSchema.parse(relationshipPack)).not.toThrow();
+  });
+
+  it('should require propositionKey', () => {
+    const packWithoutKey = {
+      packId: 'pack_a1b2c3d4',
+      proposition: 'Stingray plays at The Rigger',
+      propositionType: 'event',
+      signalIds: ['sgnl_abc12345'],
+      interpretationIds: ['intp_def67890'],
+      claimIds: ['clm_111'],
+      candidateIds: [],
+      corroborationStrength: 'weak',
+      corroborationReasoning: 'Single source',
+      sourceCount: 1,
+      status: 'gathering',
+      createdAt: '2026-05-04T12:00:00.000Z',
+      updatedAt: '2026-05-04T12:00:00.000Z',
+    };
+
+    expect(() => EvidencePackSchema.parse(packWithoutKey)).toThrow();
   });
 });

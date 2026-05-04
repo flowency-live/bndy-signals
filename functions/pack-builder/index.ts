@@ -21,12 +21,21 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
 });
 
-const TABLE = process.env.SIGNALS_TABLE || 'bndy-signals-dev';
+// Lazy table getter - fails fast at runtime, not module load
+function getTable(): string {
+  const table = process.env.SIGNALS_TABLE;
+  if (!table) {
+    throw new Error('SIGNALS_TABLE environment variable is required');
+  }
+  return table;
+}
 
 // Input from interpretation completion
 export interface PackBuilderInput {
   signalId: string;
   interpretationId: string;
+  // Note: claims array preserved for backwards compatibility but not used
+  // Each candidate has its own sourceClaimIds
   claims: Array<{
     claimId: string;
     claimType: string;
@@ -39,6 +48,7 @@ export interface PackBuilderInput {
     proposedDate?: string;
     proposedVenueName?: string;
     proposedArtistNames: string[];
+    sourceClaimIds: string[];  // Claims specifically linked to this candidate
   }>;
 }
 
@@ -74,23 +84,35 @@ export function buildProposition(candidate: {
   };
 }
 
-// Find existing pack that matches this proposition
+// Normalize proposition to a key for fuzzy matching
+// Handles case, spacing, common prefixes like "The" and "O2"
+export function buildPropositionKey(proposition: string): string {
+  return proposition
+    .toLowerCase()
+    .replace(/\s+/g, ' ')           // Collapse multiple spaces
+    .replace(/\bthe\s+/g, '')       // Strip "the " prefix
+    .replace(/\bo2\s+/g, '')        // Strip "O2 " prefix
+    .replace(/\bplays\b/g, 'play')  // Normalize "plays" to "play"
+    .trim();
+}
+
+// Find existing pack that matches this proposition (using normalized key)
 export async function findMatchingPack(input: {
   proposition: string;
   propositionType: PropositionType;
 }): Promise<EvidencePack | null> {
-  // Query by proposition hash (GSI on proposition)
-  // For now, use a simple query by propositionType and scan for matching proposition
-  // TODO: Add GSI on proposition hash for efficient lookup
+  const propositionKey = buildPropositionKey(input.proposition);
+
+  // Query by propositionKey for fuzzy matching
   const result = await ddb.send(
     new QueryCommand({
-      TableName: TABLE,
+      TableName: getTable(),
       IndexName: 'GSI1',
       KeyConditionExpression: 'GSI1PK = :pk',
-      FilterExpression: 'proposition = :prop',
+      FilterExpression: 'propositionKey = :key',
       ExpressionAttributeValues: {
         ':pk': `PACK#type#${input.propositionType}`,
-        ':prop': input.proposition,
+        ':key': propositionKey,
       },
     })
   );
@@ -100,6 +122,7 @@ export async function findMatchingPack(input: {
     return {
       packId: item.packId,
       proposition: item.proposition,
+      propositionKey: item.propositionKey,
       propositionType: item.propositionType,
       signalIds: item.signalIds,
       interpretationIds: item.interpretationIds,
@@ -128,6 +151,7 @@ export async function createPack(input: {
 }): Promise<EvidencePack> {
   const packId = `pack_${nanoid()}`;
   const now = new Date().toISOString();
+  const propositionKey = buildPropositionKey(input.proposition);
 
   // Single source = weak strength
   const { strength, reasoning } = calculateCorroborationStrength({
@@ -138,6 +162,7 @@ export async function createPack(input: {
   const pack: EvidencePack = {
     packId,
     proposition: input.proposition,
+    propositionKey,
     propositionType: input.propositionType,
     signalIds: [input.signalId],
     interpretationIds: [input.interpretationId],
@@ -153,12 +178,13 @@ export async function createPack(input: {
 
   await ddb.send(
     new PutCommand({
-      TableName: TABLE,
+      TableName: getTable(),
       Item: {
         PK: `PACK#${packId}`,
         SK: '#METADATA',
         GSI1PK: `PACK#type#${input.propositionType}`,
         GSI1SK: packId,
+        propositionKey,  // For indexed matching
         ...pack,
       },
     })
@@ -216,7 +242,7 @@ export async function updatePackWithNewEvidence(
 
   await ddb.send(
     new UpdateCommand({
-      TableName: TABLE,
+      TableName: getTable(),
       Key: { PK: `PACK#${existingPack.packId}`, SK: '#METADATA' },
       UpdateExpression: `
         SET signalIds = :signalIds,
@@ -250,7 +276,7 @@ async function linkCandidateToPack(candidateId: string, packId: string): Promise
 
   await ddb.send(
     new UpdateCommand({
-      TableName: TABLE,
+      TableName: getTable(),
       Key: { PK: `CANDIDATE#${candidateId}`, SK: '#METADATA' },
       UpdateExpression: 'SET evidencePackId = :packId, updatedAt = :now',
       ExpressionAttributeValues: {
@@ -273,8 +299,8 @@ export const handler: Handler<PackBuilderInput, PackBuilderOutput> = async (even
     // Build proposition from candidate
     const { proposition, propositionType } = buildProposition(candidate);
 
-    // Get claim IDs related to this candidate
-    const relatedClaimIds = claims.map((c) => c.claimId);
+    // Use candidate-specific claim IDs (not all interpretation claims)
+    const relatedClaimIds = candidate.sourceClaimIds || [];
 
     // Check if a pack already exists for this proposition
     const existingPack = await findMatchingPack({ proposition, propositionType });

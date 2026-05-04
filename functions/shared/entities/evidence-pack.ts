@@ -29,6 +29,7 @@ export const EvidencePackSchema = z.object({
 
   // What this pack supports (the proposition)
   proposition: z.string().min(1),
+  propositionKey: z.string().min(1),  // Normalized key for matching variants
   propositionType: PropositionTypeSchema,
 
   // Contributing evidence (all required, min 1 each)
