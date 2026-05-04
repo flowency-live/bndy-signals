@@ -4,6 +4,7 @@ import {
   DynamoDBDocumentClient,
   QueryCommand,
   PutCommand,
+  UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import {
   ClarificationRequest,
@@ -67,21 +68,23 @@ function mapAmbiguityToQuestionType(ambiguityType: AmbiguityType): Clarification
 }
 
 // Find matching venues for entity resolution
+// Uses nameLower field for case-insensitive matching
 async function findMatchingVenues(venueName: string): Promise<Array<{
   entityId: string;
   name: string;
   city?: string;
 }>> {
+  const normalizedName = venueName.toLowerCase();
+
   const result = await ddb.send(
     new QueryCommand({
       TableName: getTable(),
       IndexName: 'GSI1',
       KeyConditionExpression: 'GSI1PK = :pk',
-      FilterExpression: 'contains(#name, :name)',
-      ExpressionAttributeNames: { '#name': 'name' },
+      FilterExpression: 'contains(nameLower, :name)',
       ExpressionAttributeValues: {
         ':pk': 'ENTITY#venue',
-        ':name': venueName.toLowerCase(),
+        ':name': normalizedName,
       },
     })
   );
@@ -91,6 +94,28 @@ async function findMatchingVenues(venueName: string): Promise<Array<{
     name: item.name,
     city: item.address?.city,
   }));
+}
+
+// Update candidate with clarificationIds
+async function updateCandidateWithClarifications(
+  candidateId: string,
+  clarificationIds: string[]
+): Promise<void> {
+  if (clarificationIds.length === 0) return;
+
+  const now = new Date().toISOString();
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: getTable(),
+      Key: { PK: `CANDIDATE#${candidateId}`, SK: '#METADATA' },
+      UpdateExpression: 'SET clarificationIds = :clarIds, updatedAt = :now',
+      ExpressionAttributeValues: {
+        ':clarIds': clarificationIds,
+        ':now': now,
+      },
+    })
+  );
 }
 
 // Generate a clarification question from ambiguity
@@ -186,6 +211,9 @@ export const handler: Handler<ClarificationGeneratorInput, ClarificationGenerato
 
     if (candidateClarIds.length > 0) {
       clarificationsByCandidateId[candidate.candidateId] = candidateClarIds;
+
+      // Update candidate with clarification IDs
+      await updateCandidateWithClarifications(candidate.candidateId, candidateClarIds);
     }
   }
 

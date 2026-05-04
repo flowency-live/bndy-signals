@@ -111,6 +111,25 @@ export class WorkflowStack extends cdk.Stack {
     });
     props.signalsTable.grantReadWriteData(packBuilderFn);
 
+    // Clarification generator Lambda - generates clarifications from candidate ambiguities
+    const clarificationGeneratorFn = new NodejsFunction(this, 'ClarificationGeneratorFn', {
+      functionName: `bndy-signals-clarification-gen-${props.stage}`,
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/clarification-generator/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(1),
+      memorySize: 256,
+      environment: {
+        SIGNALS_TABLE: props.signalsTable.tableName,
+        STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    });
+    props.signalsTable.grantReadWriteData(clarificationGeneratorFn);
+
     // Failure handler Lambda
     const failureHandlerFn = new NodejsFunction(this, 'FailureHandlerFn', {
       functionName: `bndy-signals-failure-handler-${props.stage}`,
@@ -171,6 +190,14 @@ export class WorkflowStack extends cdk.Stack {
     });
     retryConfig.forEach((config) => packBuilderTask.addRetry(config));
 
+    // Clarification generator task - generates clarifications from ambiguities
+    const clarificationTask = new tasks.LambdaInvoke(this, 'ClarificationTask', {
+      lambdaFunction: clarificationGeneratorFn,
+      outputPath: '$.Payload',
+      retryOnServiceExceptions: false,
+    });
+    retryConfig.forEach((config) => clarificationTask.addRetry(config));
+
     // Success state - signal queued for review
     const successState = new sfn.Pass(this, 'QueueForReview', {
       result: sfn.Result.fromObject({ status: 'pending_review' }),
@@ -227,6 +254,16 @@ export class WorkflowStack extends cdk.Stack {
     });
     packBuildingFailed.next(handleFailure);
 
+    const clarificationFailed = new sfn.Pass(this, 'ClarificationFailed', {
+      parameters: {
+        signalId: sfn.JsonPath.stringAt('$.signalId'),
+        error: sfn.JsonPath.stringAt('$.error.Error'),
+        cause: sfn.JsonPath.stringAt('$.error.Cause'),
+        failedStep: 'clarification_generation',
+      },
+    });
+    clarificationFailed.next(handleFailure);
+
     // Add catch handlers
     extractTask.addCatch(extractionFailed, {
       errors: ['States.ALL'],
@@ -243,10 +280,16 @@ export class WorkflowStack extends cdk.Stack {
       resultPath: '$.error',
     });
 
-    // Define workflow: extract → interpret → build packs → queue for review
+    clarificationTask.addCatch(clarificationFailed, {
+      errors: ['States.ALL'],
+      resultPath: '$.error',
+    });
+
+    // Define workflow: extract → interpret → build packs → generate clarifications → queue for review
     const definition = extractTask
       .next(interpretTask)
       .next(packBuilderTask)
+      .next(clarificationTask)
       .next(successState);
 
     this.signalWorkflow = new sfn.StateMachine(this, 'SignalWorkflow', {

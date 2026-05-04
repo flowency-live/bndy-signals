@@ -71,6 +71,9 @@ export const EventCandidateSchema = z.object({
 
   // Evidence Pack link (set by pack-builder after interpretation)
   evidencePackId: z.string().regex(/^pack_[a-zA-Z0-9]{8}$/).optional(),
+
+  // Clarification links (set by clarification-generator when ambiguities exist)
+  clarificationIds: z.array(z.string().regex(/^clar_[a-zA-Z0-9]{8}$/)).optional(),
 });
 
 export type EventCandidate = z.infer<typeof EventCandidateSchema>;

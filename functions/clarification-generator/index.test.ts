@@ -17,6 +17,7 @@ vi.mock('@aws-sdk/lib-dynamodb', () => ({
   },
   QueryCommand: vi.fn((params) => ({ type: 'Query', params })),
   PutCommand: vi.fn((params) => ({ type: 'Put', params })),
+  UpdateCommand: vi.fn((params) => ({ type: 'Update', params })),
   BatchWriteCommand: vi.fn((params) => ({ type: 'BatchWrite', params })),
 }));
 
@@ -165,6 +166,8 @@ describe('handler', () => {
       { entityId: 'vnue_test1234', name: 'The Rigger', city: 'Test City' },
     ] });
     // Put clarification
+    mockSend.mockResolvedValueOnce({});
+    // Update candidate with clarificationIds
     mockSend.mockResolvedValueOnce({});
 
     const result = await handler(input);
