@@ -137,6 +137,8 @@ describe('EventCandidateSchema', () => {
     proposedVenueId: 'vnue_abc12345',
     proposedArtistIds: ['arts_abc12345'],
 
+    reasoning: 'Signal announces Stingray performing at The Rigger on Thursday 15th May at 8PM',
+
     sourceClaims: [
       {
         claimId: 'clm_claim001',
@@ -316,6 +318,7 @@ describe('Event candidate completeness calculation', () => {
       proposedDate: '2026-05-15',
       proposedVenueId: 'vnue_abc12345',
       proposedArtistIds: ['arts_abc12345'],
+      reasoning: 'Complete event with all required fields',
       sourceClaims: [
         {
           claimId: 'clm_claim001',
@@ -346,6 +349,7 @@ describe('Event candidate completeness calculation', () => {
       proposedName: 'Stingray Live',
       proposedDate: '2026-05-15',
       proposedArtistIds: ['arts_abc12345'],
+      reasoning: 'Event missing venue information',
       sourceClaims: [
         {
           claimId: 'clm_claim001',
@@ -379,6 +383,7 @@ describe('Trusted source fast-path', () => {
       proposedDate: '2026-05-15',
       proposedVenueId: 'vnue_abc12345',
       proposedArtistIds: ['arts_abc12345'],
+      reasoning: 'Submitted by verified venue owner',
       sourceClaims: [
         {
           claimId: 'clm_claim001',

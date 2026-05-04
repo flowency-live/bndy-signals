@@ -342,6 +342,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
         proposedTime: llmCandidate.proposedTime,
         proposedVenueId,
         proposedArtistIds,
+        reasoning: llmCandidate.reasoning, // LLM explains why this is an event
         sourceClaims,
         completeness: calculateCandidateCompleteness(llmCandidate),
         missingFields: getMissingFields(llmCandidate),

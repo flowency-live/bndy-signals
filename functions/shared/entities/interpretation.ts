@@ -90,8 +90,8 @@ export const InterpretationSchema = z.object({
   // Output - AI-native event candidates (proposed by LLM)
   eventCandidateIds: z.array(z.string().regex(/^cand_[a-zA-Z0-9]{8}$/)).optional(),
 
-  // Output - clarification requests (identified by LLM)
-  clarificationRequestIds: z.array(z.string().regex(/^clar_[a-zA-Z0-9]{8}$/)).optional(),
+  // NOTE: clarificationRequestIds removed until Phase C implements proper persistence
+  // See next-5-phases.md for clarification model design
 
   // Lifecycle
   status: InterpretationStatusSchema,

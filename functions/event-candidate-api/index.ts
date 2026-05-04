@@ -171,7 +171,17 @@ async function ratifyCandidate(candidateId: string) {
     })
   );
 
-  // Create canonical event
+  // Build evidence chain from source claims
+  const evidence = candidate.sourceClaims.map((claim: { claimId: string; claimType: string; status: string }) => ({
+    claimId: claim.claimId,
+    claimType: claim.claimType,
+    strength: 'moderate' as const, // Claims from candidates are at least moderate
+    linkedAt: now,
+  }));
+
+  // Create canonical event matching CanonicalEventSchema
+  // Status is 'draft' - ratification doesn't auto-publish
+  // eventStatus is 'tentative' - single source can't confirm
   const canonicalEvent = {
     PK: `EVENT#${eventId}`,
     SK: '#METADATA',
@@ -180,13 +190,18 @@ async function ratifyCandidate(candidateId: string) {
     entityId: eventId,
     entityType: 'event',
     name: candidate.proposedName,
-    date: candidate.proposedDate,
-    time: candidate.proposedTime,
+    startDate: candidate.proposedDate,
+    startTime: candidate.proposedTime,
     venueId: candidate.proposedVenueId,
     artistIds: candidate.proposedArtistIds,
+    evidence,
+    status: 'draft', // Not published - needs review or corroboration
+    eventStatus: 'tentative', // Single source can't confirm
+    verificationStatus: candidate.verificationStatus, // Carry from candidate
+    // Provenance
     sourceCandidateId: candidateId,
     sourceSignalId: candidate.signalId,
-    status: 'published',
+    sourceInterpretationId: candidate.interpretationId,
     createdAt: now,
     updatedAt: now,
   };

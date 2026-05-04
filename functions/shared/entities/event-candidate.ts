@@ -35,12 +35,15 @@ export const EventCandidateSchema = z.object({
   signalId: z.string().regex(/^sgnl_[a-zA-Z0-9]{8}$/),
   interpretationId: z.string().regex(/^intp_[a-zA-Z0-9]{8}$/),
 
-  // Aggregated from claims
+  // LLM-proposed fields
   proposedName: z.string().min(1),
   proposedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   proposedTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   proposedVenueId: z.string().regex(/^vnue_[a-zA-Z0-9]{8}$/).optional(),
   proposedArtistIds: z.array(z.string().regex(/^arts_[a-zA-Z0-9]{8}$/)),
+
+  // LLM reasoning - required for explainability (Brain principle)
+  reasoning: z.string().min(1),
 
   // Raw claim references
   sourceClaims: z.array(ClaimReferenceSchema).min(1),

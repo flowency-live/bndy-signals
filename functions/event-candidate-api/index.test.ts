@@ -74,6 +74,7 @@ const validCandidate = {
   proposedTime: '20:00',
   proposedVenueId: 'vnue_abc12345',
   proposedArtistIds: ['arts_xyz98765'],
+  reasoning: 'Signal announces Stingray performing at The Rigger on Thursday 15th May at 8PM',
   sourceClaims: [
     { claimId: 'clm_claim001', claimType: 'event_exists', value: 'Stingray Live', status: 'proposed' },
   ],
@@ -175,9 +176,20 @@ describe('event-candidate-api handler', () => {
       const body = JSON.parse(result?.body || '{}');
       expect(body.action).toBe('ratified');
       expect(body.eventId).toMatch(/^evnt_[a-zA-Z0-9]{8}$/);
+
+      // Verify canonical event matches CanonicalEventSchema
       expect(createdEvent?.name).toBe('Stingray Live at The Rigger');
+      expect(createdEvent?.startDate).toBe('2026-05-15'); // Not 'date'
+      expect(createdEvent?.startTime).toBe('20:00'); // Not 'time'
       expect(createdEvent?.venueId).toBe('vnue_abc12345');
       expect(createdEvent?.artistIds).toContain('arts_xyz98765');
+      expect(createdEvent?.status).toBe('draft'); // Not 'published'
+      expect(createdEvent?.eventStatus).toBe('tentative'); // Single source
+      expect(createdEvent?.verificationStatus).toBe('unverified'); // Carried from candidate
+      expect(createdEvent?.evidence).toHaveLength(1);
+      expect(createdEvent?.evidence[0].claimId).toBe('clm_claim001');
+      expect(createdEvent?.evidence[0].claimType).toBe('event_exists');
+      expect(createdEvent?.evidence[0].strength).toBe('moderate');
     });
 
     it('returns 400 when candidate has unresolved ambiguities', async () => {

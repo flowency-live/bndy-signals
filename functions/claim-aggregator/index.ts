@@ -201,6 +201,9 @@ export function groupClaimsIntoEventCandidate(input: AggregatorInput): EventCand
     proposedVenueId,
     proposedArtistIds,
 
+    // Fallback aggregator reasoning (deterministic, not LLM-generated)
+    reasoning: `Aggregated from ${claims.length} claims: ${eventExistsClaim.subject}${eventDateClaim ? ` on ${eventDateClaim.value}` : ''}`,
+
     sourceClaims,
 
     completeness,
