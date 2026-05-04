@@ -20,6 +20,9 @@ vi.mock('@aws-sdk/lib-dynamodb', () => ({
   UpdateCommand: vi.fn((params) => ({ type: 'Update', params })),
 }));
 
+// Capture UpdateCommand calls for verification
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
+
 // Import after mocks
 import { handler, resolveClarification, dismissClarification } from './index';
 
@@ -119,6 +122,138 @@ describe('resolveClarification', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('not found');
+  });
+
+  it('should remove resolved ambiguity and recalculate completeness', async () => {
+    const clarification = {
+      clarificationId: 'clar_test1234',
+      candidateId: 'cand_abcd1234',
+      question: 'Which venue is this?',
+      questionType: 'entity_match',
+      options: [
+        { optionId: 'opt_selected1', label: 'The Rigger, Newcastle', entityId: 'vnue_ncl12345' },
+        { optionId: 'opt_other123', label: 'The Rigger, Sheffield', entityId: 'vnue_shf67890' },
+      ],
+      status: 'open',
+      createdAt: '2026-05-04T12:00:00.000Z',
+    };
+
+    const candidate = {
+      candidateId: 'cand_abcd1234',
+      proposedName: 'Stingray Live',
+      proposedDate: '2026-05-15',
+      proposedArtistIds: ['arts_xyz12345'],
+      // No proposedVenueId - this is the ambiguity
+      ambiguities: [
+        {
+          ambiguityType: 'entity_match',
+          description: 'Multiple venues match "The Rigger"',
+          affectedClaimIds: ['clm_venue123'],
+        },
+      ],
+      completeness: 'partial',
+      missingFields: ['venue'],
+      status: 'proposed',
+    };
+
+    // Get clarification
+    mockSend.mockResolvedValueOnce({ Item: clarification });
+    // Update clarification status
+    mockSend.mockResolvedValueOnce({});
+    // Get candidate to update
+    mockSend.mockResolvedValueOnce({ Item: candidate });
+    // Update candidate with resolved data
+    mockSend.mockResolvedValueOnce({});
+
+    const result = await resolveClarification({
+      clarificationId: 'clar_test1234',
+      selectedOptionId: 'opt_selected1',
+      resolvedBy: 'user_123',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.resolution).toBe('vnue_ncl12345');
+
+    // Verify the candidate update was called with correct params
+    const updateCalls = mockSend.mock.calls.filter(
+      (call) => call[0].type === 'Update'
+    );
+
+    // Second Update should be the candidate update
+    const candidateUpdateCall = updateCalls[1];
+    expect(candidateUpdateCall).toBeDefined();
+
+    const candidateUpdateParams = candidateUpdateCall[0].params;
+    expect(candidateUpdateParams.Key).toEqual({
+      PK: 'CANDIDATE#cand_abcd1234',
+      SK: '#METADATA',
+    });
+
+    // Check that venue was resolved
+    expect(candidateUpdateParams.ExpressionAttributeValues[':venueId']).toBe('vnue_ncl12345');
+    // Check that ambiguities were cleared
+    expect(candidateUpdateParams.ExpressionAttributeValues[':ambiguities']).toEqual([]);
+    // Check that completeness was recalculated to 'complete'
+    expect(candidateUpdateParams.ExpressionAttributeValues[':completeness']).toBe('complete');
+    expect(candidateUpdateParams.ExpressionAttributeValues[':missingFields']).toEqual([]);
+  });
+
+  it('should update evidence pack when candidate has evidencePackId', async () => {
+    const clarification = {
+      clarificationId: 'clar_test1234',
+      candidateId: 'cand_abcd1234',
+      questionType: 'entity_match',
+      options: [
+        { optionId: 'opt_selected1', label: 'The Rigger', entityId: 'vnue_ncl12345' },
+      ],
+      status: 'open',
+    };
+
+    const candidate = {
+      candidateId: 'cand_abcd1234',
+      proposedName: 'Stingray Live',
+      proposedDate: '2026-05-15',
+      proposedArtistIds: ['arts_xyz12345'],
+      ambiguities: [
+        { ambiguityType: 'entity_match', description: 'Venue ambiguous', affectedClaimIds: [] },
+      ],
+      completeness: 'partial',
+      missingFields: ['venue'],
+      evidencePackId: 'pack_abcd1234', // Has evidence pack
+      status: 'proposed',
+    };
+
+    // Get clarification
+    mockSend.mockResolvedValueOnce({ Item: clarification });
+    // Update clarification status
+    mockSend.mockResolvedValueOnce({});
+    // Get candidate
+    mockSend.mockResolvedValueOnce({ Item: candidate });
+    // Update candidate
+    mockSend.mockResolvedValueOnce({});
+    // Update evidence pack
+    mockSend.mockResolvedValueOnce({});
+
+    const result = await resolveClarification({
+      clarificationId: 'clar_test1234',
+      selectedOptionId: 'opt_selected1',
+      resolvedBy: 'user_123',
+    });
+
+    expect(result.success).toBe(true);
+
+    // Verify the evidence pack was updated
+    const updateCalls = mockSend.mock.calls.filter(
+      (call) => call[0].type === 'Update'
+    );
+
+    // Third Update should be the pack update
+    expect(updateCalls.length).toBe(3);
+    const packUpdateCall = updateCalls[2];
+    expect(packUpdateCall[0].params.Key).toEqual({
+      PK: 'PACK#pack_abcd1234',
+      SK: '#METADATA',
+    });
   });
 });
 

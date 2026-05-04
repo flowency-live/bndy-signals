@@ -94,6 +94,24 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
+    // Clarification API Lambda (POST /clarifications/{clarificationId})
+    const clarificationApiFn = new NodejsFunction(this, 'ClarificationApiFn', {
+      functionName: `bndy-signals-clarification-api-${props.stage}`,
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/clarification-api/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: {
+        SIGNALS_TABLE: props.signalsTable.tableName,
+        STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    });
+
     // Grant permissions
     props.signalsBucket.grantReadWrite(signalIntakeFn);
     props.signalsTable.grantReadWriteData(signalIntakeFn);
@@ -105,6 +123,8 @@ export class ApiStack extends cdk.Stack {
     props.signalsTable.grantReadWriteData(claimReviewFn);
 
     props.signalsTable.grantReadWriteData(eventCandidateApiFn);
+
+    props.signalsTable.grantReadWriteData(clarificationApiFn);
 
     // API Gateway
     const api = new apigateway.RestApi(this, 'SignalsApi', {
@@ -169,6 +189,15 @@ export class ApiStack extends cdk.Stack {
     reject.addMethod(
       'POST',
       new apigateway.LambdaIntegration(eventCandidateApiFn)
+    );
+
+    // Clarification API routes
+    // POST /clarifications/{clarificationId} - resolve or dismiss
+    const clarifications = api.root.addResource('clarifications');
+    const clarification = clarifications.addResource('{clarificationId}');
+    clarification.addMethod(
+      'POST',
+      new apigateway.LambdaIntegration(clarificationApiFn)
     );
 
     // Outputs

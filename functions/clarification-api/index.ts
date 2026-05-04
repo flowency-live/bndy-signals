@@ -6,6 +6,7 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { ClarificationRequest, ClarificationOption } from '../shared/entities/clarification';
+import { EventCandidate, Ambiguity, calculateCompleteness } from '../shared/entities/event-candidate';
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
@@ -50,7 +51,23 @@ async function getClarification(clarificationId: string): Promise<ClarificationR
   return result.Item as ClarificationRequest | null;
 }
 
-// Update candidate with resolved entity
+// Map questionType to ambiguityType for filtering
+function questionTypeToAmbiguityType(questionType: string): string {
+  switch (questionType) {
+    case 'entity_match':
+      return 'entity_match';
+    case 'date_confirm':
+      return 'date_uncertain';
+    case 'venue_location':
+      return 'entity_match';
+    case 'artist_identity':
+      return 'entity_match';
+    default:
+      return questionType;
+  }
+}
+
+// Update candidate with resolved entity, remove ambiguity, recalculate completeness
 async function updateCandidateWithResolution(
   candidateId: string,
   questionType: string,
@@ -70,26 +87,84 @@ async function updateCandidateWithResolution(
     throw new Error(`Candidate ${candidateId} not found`);
   }
 
-  // Update based on question type
-  let updateExpression = 'SET updatedAt = :now';
-  const expressionValues: Record<string, unknown> = { ':now': now };
+  const candidate = candidateResult.Item as EventCandidate;
 
-  if (questionType === 'entity_match') {
-    // Resolution is a venueId - update proposedVenueId
-    updateExpression += ', proposedVenueId = :venueId';
-    expressionValues[':venueId'] = resolution;
+  // Build updated candidate with resolved field
+  const updatedCandidate: Partial<EventCandidate> = {
+    proposedName: candidate.proposedName,
+    proposedDate: candidate.proposedDate,
+    proposedVenueId: candidate.proposedVenueId,
+    proposedArtistIds: candidate.proposedArtistIds,
+  };
+
+  // Apply resolution based on question type
+  if (questionType === 'entity_match' || questionType === 'venue_location') {
+    updatedCandidate.proposedVenueId = resolution;
   } else if (questionType === 'date_confirm') {
-    // Resolution is the confirmed date
-    updateExpression += ', proposedDate = :date';
-    expressionValues[':date'] = resolution;
+    updatedCandidate.proposedDate = resolution;
+  } else if (questionType === 'artist_identity') {
+    // Add resolved artist to array if not already present
+    const artistIds = [...(candidate.proposedArtistIds || [])];
+    if (!artistIds.includes(resolution)) {
+      artistIds.push(resolution);
+    }
+    updatedCandidate.proposedArtistIds = artistIds;
   }
 
+  // Remove resolved ambiguity
+  const ambiguityTypeToRemove = questionTypeToAmbiguityType(questionType);
+  const remainingAmbiguities = (candidate.ambiguities || []).filter(
+    (amb: Ambiguity) => amb.ambiguityType !== ambiguityTypeToRemove
+  );
+
+  // Recalculate completeness
+  const { completeness, missingFields } = calculateCompleteness(updatedCandidate);
+
+  // Update candidate with all changes
   await ddb.send(
     new UpdateCommand({
       TableName: getTable(),
       Key: { PK: `CANDIDATE#${candidateId}`, SK: '#METADATA' },
-      UpdateExpression: updateExpression,
-      ExpressionAttributeValues: expressionValues,
+      UpdateExpression:
+        'SET updatedAt = :now, proposedVenueId = :venueId, proposedDate = :date, ' +
+        'proposedArtistIds = :artistIds, ambiguities = :ambiguities, ' +
+        'completeness = :completeness, missingFields = :missingFields',
+      ExpressionAttributeValues: {
+        ':now': now,
+        ':venueId': updatedCandidate.proposedVenueId,
+        ':date': updatedCandidate.proposedDate,
+        ':artistIds': updatedCandidate.proposedArtistIds,
+        ':ambiguities': remainingAmbiguities,
+        ':completeness': completeness,
+        ':missingFields': missingFields,
+      },
+    })
+  );
+
+  // Update evidence pack if one exists
+  if (candidate.evidencePackId) {
+    await updateEvidencePackCompleteness(candidate.evidencePackId, completeness);
+  }
+}
+
+// Update evidence pack when candidate completeness changes
+async function updateEvidencePackCompleteness(
+  packId: string,
+  candidateCompleteness: string
+): Promise<void> {
+  const now = new Date().toISOString();
+
+  // Update the pack's updatedAt to reflect the change
+  // The pack itself doesn't store completeness, but we mark it as updated
+  // so consumers know to re-fetch candidate data
+  await ddb.send(
+    new UpdateCommand({
+      TableName: getTable(),
+      Key: { PK: `PACK#${packId}`, SK: '#METADATA' },
+      UpdateExpression: 'SET updatedAt = :now',
+      ExpressionAttributeValues: {
+        ':now': now,
+      },
     })
   );
 }
