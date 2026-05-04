@@ -93,9 +93,9 @@ const LLMClaimSchema = z.object({
 // AI-native: LLM proposes event candidates directly, not just atomic claims
 const LLMEventCandidateSchema = z.object({
   proposedName: z.string(),
-  proposedDate: z.string().optional(),
-  proposedTime: z.string().optional(),
-  proposedVenueName: z.string().optional(),
+  proposedDate: z.string().nullable().optional(),
+  proposedTime: z.string().nullable().optional(),
+  proposedVenueName: z.string().nullable().optional(),
   proposedArtistNames: z.array(z.string()),
   reasoning: z.string(),
   ambiguities: z.array(z.string()),
@@ -109,6 +109,7 @@ const LLMClarificationQuestionSchema = z.object({
     'date_confirm',
     'venue_location',
     'artist_identity',
+    'event_time',
   ]),
   question: z.string(),
   options: z.array(z.string()).optional(),

@@ -14,6 +14,7 @@ export const ClarificationQuestionTypeSchema = z.enum([
   'date_confirm',    // Is this the correct date?
   'venue_location',  // Where is this venue?
   'artist_identity', // Which artist is this?
+  'event_time',      // What time is the event?
 ]);
 export type ClarificationQuestionType = z.infer<typeof ClarificationQuestionTypeSchema>;
 
