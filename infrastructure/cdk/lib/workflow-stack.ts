@@ -92,6 +92,25 @@ export class WorkflowStack extends cdk.Stack {
       })
     );
 
+    // Pack builder Lambda - runs after interpretation to build evidence packs
+    const packBuilderFn = new NodejsFunction(this, 'PackBuilderFn', {
+      functionName: `bndy-signals-pack-builder-${props.stage}`,
+      runtime: Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/pack-builder/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(2),
+      memorySize: 512,
+      environment: {
+        SIGNALS_TABLE: props.signalsTable.tableName,
+        STAGE: props.stage,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    });
+    props.signalsTable.grantReadWriteData(packBuilderFn);
+
     // Failure handler Lambda
     const failureHandlerFn = new NodejsFunction(this, 'FailureHandlerFn', {
       functionName: `bndy-signals-failure-handler-${props.stage}`,
@@ -144,6 +163,14 @@ export class WorkflowStack extends cdk.Stack {
     });
     retryConfig.forEach((config) => interpretTask.addRetry(config));
 
+    // Pack builder task - runs after interpretation to build evidence packs
+    const packBuilderTask = new tasks.LambdaInvoke(this, 'PackBuilderTask', {
+      lambdaFunction: packBuilderFn,
+      outputPath: '$.Payload',
+      retryOnServiceExceptions: false,
+    });
+    retryConfig.forEach((config) => packBuilderTask.addRetry(config));
+
     // Success state - signal queued for review
     const successState = new sfn.Pass(this, 'QueueForReview', {
       result: sfn.Result.fromObject({ status: 'pending_review' }),
@@ -190,6 +217,16 @@ export class WorkflowStack extends cdk.Stack {
     });
     interpretationFailed.next(handleFailure);
 
+    const packBuildingFailed = new sfn.Pass(this, 'PackBuildingFailed', {
+      parameters: {
+        signalId: sfn.JsonPath.stringAt('$.signalId'),
+        error: sfn.JsonPath.stringAt('$.error.Error'),
+        cause: sfn.JsonPath.stringAt('$.error.Cause'),
+        failedStep: 'pack_building',
+      },
+    });
+    packBuildingFailed.next(handleFailure);
+
     // Add catch handlers
     extractTask.addCatch(extractionFailed, {
       errors: ['States.ALL'],
@@ -201,9 +238,15 @@ export class WorkflowStack extends cdk.Stack {
       resultPath: '$.error',
     });
 
-    // Define workflow
+    packBuilderTask.addCatch(packBuildingFailed, {
+      errors: ['States.ALL'],
+      resultPath: '$.error',
+    });
+
+    // Define workflow: extract → interpret → build packs → queue for review
     const definition = extractTask
       .next(interpretTask)
+      .next(packBuilderTask)
       .next(successState);
 
     this.signalWorkflow = new sfn.StateMachine(this, 'SignalWorkflow', {

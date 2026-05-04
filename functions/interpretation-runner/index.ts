@@ -43,12 +43,23 @@ interface InterpreterInput {
   extraction: DeterministicExtraction;
 }
 
+// Simplified event candidate data for pack-builder
+interface EventCandidateForPack {
+  candidateId: string;
+  proposedName: string;
+  proposedDate?: string;
+  proposedVenueName?: string;
+  proposedArtistNames: string[];
+}
+
 interface InterpreterOutput {
   signalId: string;
   interpretationId: string;
   claims: Claim[];
   invalidClaimCount: number;
   eventCandidateIds: string[];
+  // Event candidates with data needed by pack-builder
+  eventCandidates: EventCandidateForPack[];
 }
 
 interface ParseResult {
@@ -487,12 +498,24 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     })
   );
 
+  // Build event candidates data for pack-builder
+  const eventCandidatesForPack: EventCandidateForPack[] = (llmOutput.eventCandidates || []).map(
+    (llmCandidate, index) => ({
+      candidateId: eventCandidateIds[index],
+      proposedName: llmCandidate.proposedName,
+      proposedDate: llmCandidate.proposedDate,
+      proposedVenueName: llmCandidate.proposedVenueName,
+      proposedArtistNames: llmCandidate.proposedArtistNames,
+    })
+  );
+
   return {
     signalId,
     interpretationId,
     claims,
     invalidClaimCount: invalidClaims.length,
     eventCandidateIds,
+    eventCandidates: eventCandidatesForPack,
   };
 };
 

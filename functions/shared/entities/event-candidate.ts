@@ -68,6 +68,9 @@ export const EventCandidateSchema = z.object({
 
   // Merge tracking
   mergedInto: z.string().regex(/^cand_[a-zA-Z0-9]{8}$/).optional(),
+
+  // Evidence Pack link (set by pack-builder after interpretation)
+  evidencePackId: z.string().regex(/^pack_[a-zA-Z0-9]{8}$/).optional(),
 });
 
 export type EventCandidate = z.infer<typeof EventCandidateSchema>;

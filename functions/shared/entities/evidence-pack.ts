@@ -1,40 +1,106 @@
 import { z } from 'zod';
 
+// Categorical strength - not numeric
 export const CorroborationStrengthSchema = z.enum(['weak', 'moderate', 'strong']);
 export type CorroborationStrength = z.infer<typeof CorroborationStrengthSchema>;
 
+// Pack lifecycle - cognitive, not review-queue
 export const PackStatusSchema = z.enum([
-  'gathering',
-  'ready_for_review',
-  'under_review',
-  'published',
-  'rejected',
+  'gathering',   // Accumulating evidence
+  'ready',       // Sufficient evidence for action
+  'ratified',    // Candidate ratified based on this pack
+  'rejected',    // Pack rejected
 ]);
 export type PackStatus = z.infer<typeof PackStatusSchema>;
 
-export const PackSubjectSchema = z.object({
-  type: z.enum(['event', 'venue', 'artist']),
-  description: z.string(),
-  candidateEntityId: z.string().optional(),
-});
-export type PackSubject = z.infer<typeof PackSubjectSchema>;
+// What kind of proposition this pack supports
+export const PropositionTypeSchema = z.enum([
+  'event',           // "Artist X plays at Venue Y on Date Z"
+  'artist_venue',    // "Artist X regularly performs at Venue Y"
+  'venue_location',  // "Venue X is located in City Y"
+  'artist_exists',   // "Artist X exists and is a performer"
+  'venue_exists',    // "Venue X exists and is a live music venue"
+]);
+export type PropositionType = z.infer<typeof PropositionTypeSchema>;
 
-export const SignalReferenceSchema = z.object({
-  signalId: z.string(),
-  signalType: z.string(),
-  addedAt: z.string().datetime(),
-  contribution: z.string(),
-});
-export type SignalReference = z.infer<typeof SignalReferenceSchema>;
+// The core Evidence Pack schema - cognitive core, not review artefact
+export const EvidencePackSchema = z.object({
+  packId: z.string().regex(/^pack_[a-zA-Z0-9]{8}$/),
 
-export const InterpretationReferenceSchema = z.object({
-  interpretationId: z.string(),
-  signalId: z.string(),
-  version: z.number().int().positive(),
-  claimCount: z.number().int().nonnegative(),
-});
-export type InterpretationReference = z.infer<typeof InterpretationReferenceSchema>;
+  // What this pack supports (the proposition)
+  proposition: z.string().min(1),
+  propositionType: PropositionTypeSchema,
 
+  // Contributing evidence (all required, min 1 each)
+  signalIds: z.array(z.string()).min(1),
+  interpretationIds: z.array(z.string()).min(1),
+  claimIds: z.array(z.string()).min(1),
+
+  // What this pack outputs/supports
+  candidateIds: z.array(z.string()),  // Event candidates this pack supports (can be empty)
+
+  // Corroboration assessment - categorical with reasoning
+  corroborationStrength: CorroborationStrengthSchema,
+  corroborationReasoning: z.string().min(1),  // WHY this strength - required for explainability
+
+  // Source tracking (for strength calculation)
+  sourceCount: z.number().int().nonnegative(),
+
+  // Lifecycle
+  status: PackStatusSchema,
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export type EvidencePack = z.infer<typeof EvidencePackSchema>;
+
+// Helper to calculate corroboration strength from source counts
+// Returns categorical strength with reasoning
+export function calculateCorroborationStrength(input: {
+  sourceCount: number;
+  trustedSourceCount: number;
+}): { strength: CorroborationStrength; reasoning: string } {
+  const { sourceCount, trustedSourceCount } = input;
+
+  // Strong: 3+ sources OR 2+ trusted sources
+  if (sourceCount >= 3) {
+    return {
+      strength: 'strong',
+      reasoning: `3+ independent sources (${sourceCount}) agree on this proposition`,
+    };
+  }
+
+  if (trustedSourceCount >= 2) {
+    return {
+      strength: 'strong',
+      reasoning: `${trustedSourceCount} trusted sources confirm this proposition`,
+    };
+  }
+
+  // Moderate: 2 sources OR 1 trusted source
+  if (sourceCount === 2) {
+    return {
+      strength: 'moderate',
+      reasoning: `2 independent sources agree on this proposition`,
+    };
+  }
+
+  if (trustedSourceCount === 1) {
+    return {
+      strength: 'moderate',
+      reasoning: `1 trusted source confirms this proposition`,
+    };
+  }
+
+  // Weak: single source, no corroboration
+  return {
+    strength: 'weak',
+    reasoning: `Single source, no corroboration yet`,
+  };
+}
+
+// Legacy exports for backwards compatibility (used by event-candidate.ts)
+// TODO: Remove after event-candidate.ts is updated to use new types
 export const ClaimReferenceSchema = z.object({
   claimId: z.string(),
   claimType: z.string(),
@@ -42,69 +108,3 @@ export const ClaimReferenceSchema = z.object({
   status: z.enum(['proposed', 'accepted', 'challenged']),
 });
 export type ClaimReference = z.infer<typeof ClaimReferenceSchema>;
-
-export const ProposedEventSchema = z.object({
-  name: z.string(),
-  date: z.string(),
-  venueRef: z.string(),
-  artistRefs: z.array(z.string()),
-  confidence: CorroborationStrengthSchema,
-});
-export type ProposedEvent = z.infer<typeof ProposedEventSchema>;
-
-export const ProposedVenueSchema = z.object({
-  name: z.string(),
-  location: z.string().optional(),
-  matchedEntityId: z.string().optional(),
-  isNew: z.boolean(),
-});
-export type ProposedVenue = z.infer<typeof ProposedVenueSchema>;
-
-export const ProposedArtistSchema = z.object({
-  name: z.string(),
-  matchedEntityId: z.string().optional(),
-  isNew: z.boolean(),
-});
-export type ProposedArtist = z.infer<typeof ProposedArtistSchema>;
-
-export const ProposedRelationshipSchema = z.object({
-  type: z.string(),
-  fromEntity: z.string(),
-  toEntity: z.string(),
-});
-export type ProposedRelationship = z.infer<typeof ProposedRelationshipSchema>;
-
-export const ProposedEntitiesSchema = z.object({
-  events: z.array(ProposedEventSchema),
-  venues: z.array(ProposedVenueSchema),
-  artists: z.array(ProposedArtistSchema),
-  relationships: z.array(ProposedRelationshipSchema),
-});
-export type ProposedEntities = z.infer<typeof ProposedEntitiesSchema>;
-
-export const EvidencePackSchema = z.object({
-  packId: z.string().regex(/^pack_[a-zA-Z0-9]{8}$/),
-
-  // What this pack is about
-  subject: PackSubjectSchema,
-
-  // Contributing evidence
-  signals: z.array(SignalReferenceSchema),
-  interpretations: z.array(InterpretationReferenceSchema),
-  claims: z.array(ClaimReferenceSchema),
-
-  // Corroboration assessment (NOT numeric)
-  corroborationStrength: CorroborationStrengthSchema,
-  corroborationReasoning: z.string(),
-
-  // What this evidence proposes
-  proposedEntities: ProposedEntitiesSchema,
-
-  // Lifecycle
-  status: PackStatusSchema,
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-  publishedAt: z.string().datetime().optional(),
-});
-
-export type EvidencePack = z.infer<typeof EvidencePackSchema>;
