@@ -2,8 +2,9 @@ import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, QueryCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 import { Signal, Interpretation, Claim } from '../shared/entities';
+import { ClarificationRequest } from '../shared/entities/clarification';
 
 const s3 = new S3Client({});
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -11,11 +12,67 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const BUCKET = process.env.SIGNALS_BUCKET!;
 const TABLE = process.env.SIGNALS_TABLE!;
 
+interface EventCandidate {
+  candidateId: string;
+  clarificationIds?: string[];
+}
+
 interface SignalResponse {
   signal: Signal;
   interpretation?: Interpretation;
   claims: Claim[];
+  clarifications: ClarificationRequest[];
   rawContentUrl?: string;
+}
+
+// Fetch clarifications from event candidates
+async function getClarificationsFromCandidates(candidateIds: string[]): Promise<ClarificationRequest[]> {
+  if (candidateIds.length === 0) return [];
+
+  // Batch get candidates
+  const candidateKeys = candidateIds.map((id) => ({
+    PK: `CANDIDATE#${id}`,
+    SK: '#METADATA',
+  }));
+
+  const candidatesResult = await ddb.send(
+    new BatchGetCommand({
+      RequestItems: {
+        [TABLE]: { Keys: candidateKeys },
+      },
+    })
+  );
+
+  const candidates = (candidatesResult.Responses?.[TABLE] || []) as EventCandidate[];
+
+  // Collect all clarificationIds from candidates
+  const clarificationIds: string[] = [];
+  for (const candidate of candidates) {
+    if (candidate.clarificationIds && candidate.clarificationIds.length > 0) {
+      clarificationIds.push(...candidate.clarificationIds);
+    }
+  }
+
+  if (clarificationIds.length === 0) return [];
+
+  // Batch get clarifications
+  const clarificationKeys = clarificationIds.map((id) => ({
+    PK: `CLAR#${id}`,
+    SK: '#METADATA',
+  }));
+
+  const clarificationsResult = await ddb.send(
+    new BatchGetCommand({
+      RequestItems: {
+        [TABLE]: { Keys: clarificationKeys },
+      },
+    })
+  );
+
+  const allClarifications = (clarificationsResult.Responses?.[TABLE] || []) as ClarificationRequest[];
+
+  // Filter to only return open clarifications
+  return allClarifications.filter((c) => c.status === 'open');
 }
 
 export const handler: APIGatewayProxyHandler = async (event) => {
@@ -71,6 +128,12 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
     const claims = (claimsResult.Items ?? []) as Claim[];
 
+    // Get clarifications from candidates (if interpretation has event candidates)
+    let clarifications: ClarificationRequest[] = [];
+    if (interpretation?.eventCandidateIds && interpretation.eventCandidateIds.length > 0) {
+      clarifications = await getClarificationsFromCandidates(interpretation.eventCandidateIds);
+    }
+
     // Generate presigned URL for raw content (valid for 15 minutes)
     let rawContentUrl: string | undefined;
     if (signal.rawContentS3Key) {
@@ -85,6 +148,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       signal,
       interpretation,
       claims,
+      clarifications,
       rawContentUrl,
     };
 
