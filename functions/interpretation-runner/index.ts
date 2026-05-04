@@ -645,8 +645,11 @@ You MUST respond with valid JSON in this exact format:
   "uncertainties": ["Things you are not sure about"]
 }
 
-IMPORTANT: If this evidence describes an event, you MUST include an eventCandidates entry.
-If there are ambiguities (like venue location unclear), include clarificationQuestions.
+IMPORTANT RULES:
+1. If this evidence describes an event, you MUST include an eventCandidates entry
+2. If NO TIME is provided, you MUST add an event_time clarificationQuestion asking "What time does this event start?"
+3. If venue could match multiple locations, add a venue_location clarificationQuestion
+4. Always include clarificationQuestions for missing critical info (time is critical for events)
 
 Claim types (predicate is REQUIRED for all types):
 - event_exists: An event is happening (subject=event name, predicate=exists, object=description)
