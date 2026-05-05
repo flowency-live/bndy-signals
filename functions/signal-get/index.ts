@@ -25,7 +25,25 @@ interface SignalResponse {
   rawContentUrl?: string;
 }
 
-// Fetch clarifications from event candidates
+// Fetch clarifications directly linked to signal via GSI2
+async function getClarificationsBySignal(signalId: string): Promise<ClarificationRequest[]> {
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE,
+      IndexName: 'GSI2',
+      KeyConditionExpression: 'GSI2PK = :pk AND begins_with(GSI2SK, :sk)',
+      ExpressionAttributeValues: {
+        ':pk': `SIGNAL#${signalId}`,
+        ':sk': 'CLAR#',
+      },
+    })
+  );
+
+  const clarifications = (result.Items ?? []) as ClarificationRequest[];
+  return clarifications.filter((c) => c.status === 'open');
+}
+
+// Fetch clarifications from event candidates (legacy path - via clarificationIds on candidates)
 async function getClarificationsFromCandidates(candidateIds: string[]): Promise<ClarificationRequest[]> {
   if (candidateIds.length === 0) return [];
 
@@ -128,11 +146,20 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
     const claims = (claimsResult.Items ?? []) as Claim[];
 
-    // Get clarifications from candidates (if interpretation has event candidates)
-    let clarifications: ClarificationRequest[] = [];
-    if (interpretation?.eventCandidateIds && interpretation.eventCandidateIds.length > 0) {
-      clarifications = await getClarificationsFromCandidates(interpretation.eventCandidateIds);
+    // Get clarifications - both directly linked to signal and via candidates
+    const [directClarifications, candidateClarifications] = await Promise.all([
+      getClarificationsBySignal(signalId),
+      interpretation?.eventCandidateIds && interpretation.eventCandidateIds.length > 0
+        ? getClarificationsFromCandidates(interpretation.eventCandidateIds)
+        : Promise.resolve([]),
+    ]);
+
+    // Deduplicate by clarificationId (a clarification might be linked to both signal and candidate)
+    const clarificationMap = new Map<string, ClarificationRequest>();
+    for (const c of [...directClarifications, ...candidateClarifications]) {
+      clarificationMap.set(c.clarificationId, c);
     }
+    const clarifications = Array.from(clarificationMap.values());
 
     // Generate presigned URL for raw content (valid for 15 minutes)
     let rawContentUrl: string | undefined;

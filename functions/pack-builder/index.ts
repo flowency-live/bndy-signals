@@ -138,8 +138,8 @@ export async function findMatchingPack(input: {
     })
   );
 
-  if (result.Items && result.Items.length > 0) {
-    const item = result.Items[0];
+  const item = result.Items?.[0];
+  if (item) {
     return {
       packId: item.packId,
       proposition: item.proposition,
@@ -205,8 +205,7 @@ export async function createPack(input: {
         SK: '#METADATA',
         GSI1PK: `PACK#type#${input.propositionType}`,
         GSI1SK: packId,
-        propositionKey,  // For indexed matching
-        ...pack,
+        ...pack,  // pack already includes propositionKey
       },
     })
   );

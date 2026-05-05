@@ -27,6 +27,11 @@ import {
   Ambiguity,
   AmbiguityType,
 } from '../shared/entities';
+import {
+  ClarificationRequest,
+  ClarificationQuestionType,
+  generateClarificationId,
+} from '../shared/entities/clarification';
 import { findMatchingEntities, EntityCandidate } from '../entity-resolver';
 
 const bedrock = new BedrockRuntimeClient({});
@@ -66,6 +71,8 @@ interface InterpreterOutput {
   eventCandidateIds: string[];
   // Event candidates with data needed by pack-builder
   eventCandidates: EventCandidateForPack[];
+  // Clarification IDs created from LLM questions
+  clarificationIds: string[];
 }
 
 interface ParseResult {
@@ -356,8 +363,8 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
         signalId,
         interpretationId,
         proposedName: llmCandidate.proposedName,
-        proposedDate: llmCandidate.proposedDate,
-        proposedTime: llmCandidate.proposedTime,
+        proposedDate: llmCandidate.proposedDate ?? undefined,
+        proposedTime: llmCandidate.proposedTime ?? undefined,
         proposedVenueId,
         proposedArtistIds,
         reasoning: llmCandidate.reasoning, // LLM explains why this is an event
@@ -472,6 +479,47 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     console.log(`Stored ${eventCandidates.length} AI-proposed event candidates`);
   }
 
+  // Create clarifications from LLM-generated questions
+  const clarificationIds: string[] = [];
+  if (llmOutput.clarificationQuestions && llmOutput.clarificationQuestions.length > 0) {
+    const firstCandidate = eventCandidates[0];
+
+    for (const llmQuestion of llmOutput.clarificationQuestions) {
+      const clarificationId = generateClarificationId();
+      clarificationIds.push(clarificationId);
+
+      const clarification: ClarificationRequest = {
+        clarificationId,
+        candidateId: firstCandidate?.candidateId,
+        question: llmQuestion.question,
+        questionType: llmQuestion.questionType as ClarificationQuestionType,
+        options: (llmQuestion.options || []).map((label, idx) => ({
+          optionId: `opt_${nanoid()}`,
+          label,
+        })),
+        status: 'open',
+        createdAt: now,
+      };
+
+      await ddb.send(
+        new PutCommand({
+          TableName: TABLE,
+          Item: {
+            PK: `CLAR#${clarificationId}`,
+            SK: '#METADATA',
+            GSI1PK: firstCandidate ? `CANDIDATE#${firstCandidate.candidateId}` : `SIGNAL#${signalId}`,
+            GSI1SK: `CLAR#${clarificationId}`,
+            GSI2PK: `SIGNAL#${signalId}`,
+            GSI2SK: `CLAR#${clarificationId}`,
+            ...clarification,
+          },
+        })
+      );
+    }
+
+    console.log(`Created ${clarificationIds.length} clarification requests from LLM questions`);
+  }
+
   // Link interpretation to signal
   await ddb.send(
     new PutCommand({
@@ -513,7 +561,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     proposedDate: candidate.proposedDate,
     proposedVenueName: llmOutput.eventCandidates?.find(
       (lc) => lc.proposedName === candidate.proposedName
-    )?.proposedVenueName,
+    )?.proposedVenueName ?? undefined,
     proposedArtistNames: llmOutput.eventCandidates?.find(
       (lc) => lc.proposedName === candidate.proposedName
     )?.proposedArtistNames || [],
@@ -528,6 +576,7 @@ export const handler: Handler<InterpreterInput, InterpreterOutput> = async (
     invalidClaimCount: invalidClaims.length,
     eventCandidateIds,
     eventCandidates: eventCandidatesForPack,
+    clarificationIds,
   };
 };
 
@@ -580,11 +629,20 @@ function inferNextMay15(currentDate: string): string {
 function buildInterpretationPrompt(extraction: DeterministicExtraction, currentDate: string): string {
   const exampleDate = inferNextMay15(currentDate);
   const exampleYear = exampleDate.slice(0, 4);
+  // Convert currentDate to UK format for display
+  const [year, month, day] = currentDate.split('-');
+  const currentDateUK = `${day}/${month}/${year}`;
 
-  return `You are analyzing evidence about live music events.
+  return `You are analyzing evidence about live music events in the UK.
 
 <context>
-Current date: ${currentDate}
+Current date: ${currentDate} (${currentDateUK} in UK format)
+
+CRITICAL - UK locale rules (YOU MUST FOLLOW THESE):
+- Use UK date format DD/MM/YYYY in all text output (summary, reasoning)
+- Use UK spellings (colour, centre, organised, etc.)
+- Assume UK locations unless explicitly stated otherwise
+- Store proposedDate in YYYY-MM-DD format (for database), but display as DD/MM/YYYY in text
 
 CRITICAL - Date inference rules (YOU MUST ALWAYS INFER DATES):
 - "next saturday", "this saturday", "saturday" → Calculate the actual date from ${currentDate}
@@ -593,6 +651,7 @@ CRITICAL - Date inference rules (YOU MUST ALWAYS INFER DATES):
 - Mark inferred dates as strength "weak" and note in uncertainties
 - You MUST provide proposedDate in YYYY-MM-DD format whenever ANY date reference exists
 - "next saturday" from ${currentDate} = calculate it (e.g., if today is Sunday, next Saturday is 6 days away)
+- In your summary/reasoning, write the actual date (e.g., "Saturday 10/05/2026") NOT "next Saturday"
 
 Time handling:
 - If no time given, leave proposedTime empty (do NOT guess)
@@ -668,7 +727,7 @@ Strength levels:
 
 Example for "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM" (given current date ${currentDate}):
 {
-  "summary": "Announcement for Stingray performing at The Rigger on May 15th",
+  "summary": "Announcement for Stingray performing at The Rigger on Thursday 15/05/${exampleYear}",
   "claims": [
     {
       "type": "event_exists",

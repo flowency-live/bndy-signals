@@ -38,6 +38,7 @@ const LLMClarificationQuestionSchema = z.object({
     'date_confirm',
     'venue_location',
     'artist_identity',
+    'event_time',
   ]),
   question: z.string(),
   options: z.array(z.string()).optional(),
@@ -282,5 +283,105 @@ describe('LLMOutputSchema', () => {
     };
 
     expect(() => LLMOutputSchema.parse(invalidOutput)).toThrow();
+  });
+});
+
+describe('LLMClarificationQuestionSchema', () => {
+  it('should accept event_time question type', () => {
+    const timeQuestion = {
+      questionType: 'event_time',
+      question: 'What time does this event start?',
+      options: [],
+      relatedClaimTypes: ['event_time'],
+    };
+    expect(() => LLMClarificationQuestionSchema.parse(timeQuestion)).not.toThrow();
+  });
+
+  it('should accept venue_location question type', () => {
+    const venueQuestion = {
+      questionType: 'venue_location',
+      question: 'Which Swiftys is this?',
+      options: ['Swiftys, Newcastle', 'Swiftys, Sunderland'],
+      relatedClaimTypes: ['venue_hosts'],
+    };
+    expect(() => LLMClarificationQuestionSchema.parse(venueQuestion)).not.toThrow();
+  });
+});
+
+describe('clarificationQuestions in LLMOutput', () => {
+  it('should parse output with event_time clarification question', () => {
+    const outputWithTimeClarification = {
+      summary: 'Event at Swiftys on Saturday - time unknown',
+      claims: [
+        {
+          type: 'event_exists',
+          subject: 'Live Music Night',
+          predicate: 'exists',
+          object: 'Live music event',
+          strength: 'moderate',
+          reasoning: 'Event announcement',
+        },
+      ],
+      eventCandidates: [
+        {
+          proposedName: 'Live Music Night at Swiftys',
+          proposedDate: '2026-05-09',
+          proposedVenueName: 'Swiftys',
+          proposedArtistNames: ['Local Band'],
+          reasoning: 'Event poster with date but no time',
+          ambiguities: ['No start time specified'],
+          sourceClaimRefs: ['event_exists'],
+        },
+      ],
+      clarificationQuestions: [
+        {
+          questionType: 'event_time',
+          question: 'What time does this event start?',
+          options: [],
+          relatedClaimTypes: ['event_time'],
+        },
+      ],
+      uncertainties: ['No time specified'],
+    };
+
+    const parsed = LLMOutputSchema.parse(outputWithTimeClarification);
+    expect(parsed.clarificationQuestions).toHaveLength(1);
+    expect(parsed.clarificationQuestions?.[0]?.questionType).toBe('event_time');
+    expect(parsed.clarificationQuestions?.[0]?.question).toBe('What time does this event start?');
+  });
+
+  it('should parse output with multiple clarification questions', () => {
+    const outputWithMultipleClarifications = {
+      summary: 'Event with unclear details',
+      claims: [
+        {
+          type: 'event_exists',
+          subject: 'Gig Night',
+          predicate: 'exists',
+          object: 'Live music event',
+          strength: 'weak',
+          reasoning: 'Partial info only',
+        },
+      ],
+      eventCandidates: [],
+      clarificationQuestions: [
+        {
+          questionType: 'event_time',
+          question: 'What time does this event start?',
+          options: [],
+          relatedClaimTypes: ['event_time'],
+        },
+        {
+          questionType: 'venue_location',
+          question: 'Which venue is hosting this event?',
+          options: [],
+          relatedClaimTypes: ['venue_hosts'],
+        },
+      ],
+      uncertainties: ['Missing time', 'Missing venue'],
+    };
+
+    const parsed = LLMOutputSchema.parse(outputWithMultipleClarifications);
+    expect(parsed.clarificationQuestions).toHaveLength(2);
   });
 });

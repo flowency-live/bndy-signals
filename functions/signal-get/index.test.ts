@@ -77,7 +77,9 @@ describe('signal-get handler', () => {
 
     // Get signal
     mockSend.mockResolvedValueOnce({ Item: signal });
-    // Query claims
+    // Query claims (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
+    // Query direct clarifications by signal (GSI2)
     mockSend.mockResolvedValueOnce({ Items: [] });
 
     const event = { pathParameters: { signalId: 'sgnl_test1234' } } as any;
@@ -116,8 +118,10 @@ describe('signal-get handler', () => {
     mockSend.mockResolvedValueOnce({ Item: signal });
     // Get interpretation
     mockSend.mockResolvedValueOnce({ Item: interpretation });
-    // Query claims
+    // Query claims (GSI2)
     mockSend.mockResolvedValueOnce({ Items: claims });
+    // Query direct clarifications by signal (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
 
     const event = { pathParameters: { signalId: 'sgnl_test1234' } } as any;
     const result = await handler(event, {} as any, vi.fn());
@@ -170,9 +174,11 @@ describe('signal-get handler', () => {
     mockSend.mockResolvedValueOnce({ Item: signal });
     // Get interpretation
     mockSend.mockResolvedValueOnce({ Item: interpretation });
-    // Query claims
+    // Query claims (GSI2)
     mockSend.mockResolvedValueOnce({ Items: [] });
-    // BatchGet candidates
+    // Parallel: Query direct clarifications by signal (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
+    // Parallel: BatchGet candidates
     mockSend.mockResolvedValueOnce({
       Responses: { 'test-signals-table': [candidate] },
     });
@@ -232,9 +238,11 @@ describe('signal-get handler', () => {
     mockSend.mockResolvedValueOnce({ Item: signal });
     // Get interpretation
     mockSend.mockResolvedValueOnce({ Item: interpretation });
-    // Query claims
+    // Query claims (GSI2)
     mockSend.mockResolvedValueOnce({ Items: [] });
-    // BatchGet candidates
+    // Parallel: Query direct clarifications by signal (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
+    // Parallel: BatchGet candidates
     mockSend.mockResolvedValueOnce({
       Responses: { 'test-signals-table': [candidate] },
     });
@@ -274,9 +282,11 @@ describe('signal-get handler', () => {
     mockSend.mockResolvedValueOnce({ Item: signal });
     // Get interpretation
     mockSend.mockResolvedValueOnce({ Item: interpretation });
-    // Query claims
+    // Query claims (GSI2)
     mockSend.mockResolvedValueOnce({ Items: [] });
-    // BatchGet candidates
+    // Parallel: Query direct clarifications by signal (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
+    // Parallel: BatchGet candidates
     mockSend.mockResolvedValueOnce({
       Responses: { 'test-signals-table': [candidate] },
     });
@@ -336,9 +346,11 @@ describe('signal-get handler', () => {
     mockSend.mockResolvedValueOnce({ Item: signal });
     // Get interpretation
     mockSend.mockResolvedValueOnce({ Item: interpretation });
-    // Query claims
+    // Query claims (GSI2)
     mockSend.mockResolvedValueOnce({ Items: [] });
-    // BatchGet candidates
+    // Parallel: Query direct clarifications by signal (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
+    // Parallel: BatchGet candidates
     mockSend.mockResolvedValueOnce({
       Responses: { 'test-signals-table': candidates },
     });
@@ -353,10 +365,8 @@ describe('signal-get handler', () => {
     expect(result?.statusCode).toBe(200);
     const body = JSON.parse(result!.body);
     expect(body.clarifications).toHaveLength(2);
-    expect(body.clarifications.map((c: any) => c.clarificationId)).toEqual([
-      'clar_event1_q',
-      'clar_event2_q',
-    ]);
+    expect(body.clarifications.map((c: any) => c.clarificationId)).toContain('clar_event1_q');
+    expect(body.clarifications.map((c: any) => c.clarificationId)).toContain('clar_event2_q');
   });
 
   it('should return presigned URL for raw content', async () => {
@@ -368,7 +378,9 @@ describe('signal-get handler', () => {
     mockGetSignedUrl.mockResolvedValueOnce('https://s3.example.com/presigned');
     // Get signal
     mockSend.mockResolvedValueOnce({ Item: signal });
-    // Query claims
+    // Query claims (GSI2)
+    mockSend.mockResolvedValueOnce({ Items: [] });
+    // Query direct clarifications by signal (GSI2)
     mockSend.mockResolvedValueOnce({ Items: [] });
 
     const event = { pathParameters: { signalId: 'sgnl_test1234' } } as any;
