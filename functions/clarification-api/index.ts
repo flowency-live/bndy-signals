@@ -23,8 +23,54 @@ function getTable(): string {
 
 interface ResolveInput {
   clarificationId: string;
-  selectedOptionId: string;
+  selectedOptionId?: string;  // For option selection
+  freeformValue?: string;     // For free-form text input
   resolvedBy: string;
+}
+
+// Normalise time input for grassroots gigs (assume PM for single digits)
+function normaliseTimeInput(input: string): string {
+  const trimmed = input.trim();
+
+  // Already in HH:MM format
+  if (/^\d{1,2}:\d{2}$/.test(trimmed)) {
+    const [hours, mins] = trimmed.split(':').map(Number);
+    // If hours < 12 and likely PM (evening gig), convert to 24h
+    if (hours !== undefined && hours < 12 && hours !== 0) {
+      return `${hours + 12}:${mins?.toString().padStart(2, '0')}`;
+    }
+    return `${hours?.toString().padStart(2, '0')}:${mins?.toString().padStart(2, '0')}`;
+  }
+
+  // Just a number (e.g., "9" or "21")
+  if (/^\d{1,2}$/.test(trimmed)) {
+    const hours = parseInt(trimmed, 10);
+    // Grassroots gigs are typically afternoon/evening
+    // If 1-11, assume PM (13:00-23:00)
+    if (hours >= 1 && hours <= 11) {
+      return `${hours + 12}:00`;
+    }
+    // If 12-23, use as-is
+    return `${hours.toString().padStart(2, '0')}:00`;
+  }
+
+  // Handle "9pm", "9 pm", "21:00" etc.
+  const pmMatch = trimmed.match(/^(\d{1,2})\s*(?:pm|PM)$/);
+  if (pmMatch?.[1]) {
+    const hours = parseInt(pmMatch[1], 10);
+    const h24 = hours === 12 ? 12 : hours + 12;
+    return `${h24}:00`;
+  }
+
+  const amMatch = trimmed.match(/^(\d{1,2})\s*(?:am|AM)$/);
+  if (amMatch?.[1]) {
+    const hours = parseInt(amMatch[1], 10);
+    const h24 = hours === 12 ? 0 : hours;
+    return `${h24.toString().padStart(2, '0')}:00`;
+  }
+
+  // Return as-is if can't parse
+  return trimmed;
 }
 
 interface DismissInput {
@@ -109,6 +155,9 @@ async function updateCandidateWithResolution(
       artistIds.push(resolution);
     }
     updatedCandidate.proposedArtistIds = artistIds;
+  } else if (questionType === 'event_time') {
+    // Store the time on the candidate
+    (updatedCandidate as EventCandidate & { proposedTime?: string }).proposedTime = resolution;
   }
 
   // Remove resolved ambiguity
@@ -121,6 +170,7 @@ async function updateCandidateWithResolution(
   const { completeness, missingFields } = calculateCompleteness(updatedCandidate);
 
   // Update candidate with all changes
+  const proposedTime = (updatedCandidate as EventCandidate & { proposedTime?: string }).proposedTime;
   await ddb.send(
     new UpdateCommand({
       TableName: getTable(),
@@ -128,7 +178,8 @@ async function updateCandidateWithResolution(
       UpdateExpression:
         'SET updatedAt = :now, proposedVenueId = :venueId, proposedDate = :date, ' +
         'proposedArtistIds = :artistIds, ambiguities = :ambiguities, ' +
-        'completeness = :completeness, missingFields = :missingFields',
+        'completeness = :completeness, missingFields = :missingFields' +
+        (proposedTime ? ', proposedTime = :time' : ''),
       ExpressionAttributeValues: {
         ':now': now,
         ':venueId': updatedCandidate.proposedVenueId,
@@ -137,6 +188,7 @@ async function updateCandidateWithResolution(
         ':ambiguities': remainingAmbiguities,
         ':completeness': completeness,
         ':missingFields': missingFields,
+        ...(proposedTime ? { ':time': proposedTime } : {}),
       },
     })
   );
@@ -169,9 +221,9 @@ async function updateEvidencePackCompleteness(
   );
 }
 
-// Resolve a clarification with a selected option
+// Resolve a clarification with a selected option or free-form value
 export async function resolveClarification(input: ResolveInput): Promise<ResolutionResult> {
-  const { clarificationId, selectedOptionId, resolvedBy } = input;
+  const { clarificationId, selectedOptionId, freeformValue, resolvedBy } = input;
 
   // Get clarification
   const clarification = await getClarification(clarificationId);
@@ -184,16 +236,31 @@ export async function resolveClarification(input: ResolveInput): Promise<Resolut
     return { success: false, error: `Clarification ${clarificationId} already resolved or dismissed` };
   }
 
-  // Find the selected option
-  const selectedOption = clarification.options.find(
-    (opt: ClarificationOption) => opt.optionId === selectedOptionId
-  );
-  if (!selectedOption) {
-    return { success: false, error: `Option ${selectedOptionId} not found in clarification` };
+  let resolution: string;
+  let entityIdForCandidate: string | undefined;
+
+  // Handle free-form value (for questions without options, like event_time)
+  if (freeformValue !== undefined) {
+    // Normalise time input if this is a time question
+    if (clarification.questionType === 'event_time') {
+      resolution = normaliseTimeInput(freeformValue);
+    } else {
+      resolution = freeformValue;
+    }
+  } else if (selectedOptionId) {
+    // Handle option selection
+    const selectedOption = clarification.options.find(
+      (opt: ClarificationOption) => opt.optionId === selectedOptionId
+    );
+    if (!selectedOption) {
+      return { success: false, error: `Option ${selectedOptionId} not found in clarification` };
+    }
+    resolution = selectedOption.entityId || selectedOption.label;
+    entityIdForCandidate = selectedOption.entityId;
+  } else {
+    return { success: false, error: 'Either selectedOptionId or freeformValue must be provided' };
   }
 
-  // Determine resolution value (entityId or label)
-  const resolution = selectedOption.entityId || selectedOption.label;
   const now = new Date().toISOString();
 
   // Update clarification status
@@ -213,11 +280,14 @@ export async function resolveClarification(input: ResolveInput): Promise<Resolut
   );
 
   // Update candidate with resolution if applicable
-  if (clarification.candidateId && selectedOption.entityId) {
+  if (clarification.candidateId) {
+    // For entity selections, use the entityId
+    // For free-form, use the resolution value directly
+    const valueToApply = entityIdForCandidate || resolution;
     await updateCandidateWithResolution(
       clarification.candidateId,
       clarification.questionType,
-      selectedOption.entityId
+      valueToApply
     );
   }
 
@@ -275,17 +345,18 @@ export const handler: APIGatewayProxyHandler = async (event): Promise<APIGateway
     const { action } = body;
 
     if (action === 'resolve') {
-      const { selectedOptionId, resolvedBy } = body;
-      if (!selectedOptionId || !resolvedBy) {
+      const { selectedOptionId, freeformValue, resolvedBy } = body;
+      if ((!selectedOptionId && freeformValue === undefined) || !resolvedBy) {
         return {
           statusCode: 400,
-          body: JSON.stringify({ error: 'Missing selectedOptionId or resolvedBy' }),
+          body: JSON.stringify({ error: 'Missing (selectedOptionId or freeformValue) or resolvedBy' }),
         };
       }
 
       const result = await resolveClarification({
         clarificationId,
         selectedOptionId,
+        freeformValue,
         resolvedBy,
       });
 

@@ -124,6 +124,70 @@ describe('resolveClarification', () => {
     expect(result.error).toContain('not found');
   });
 
+  it('should resolve with free-form text when no options and freeformValue provided', async () => {
+    const clarification = {
+      clarificationId: 'clar_time1234',
+      candidateId: 'cand_xyz12345',
+      question: 'What time does this event start?',
+      questionType: 'event_time',
+      options: [], // No options - free-form expected
+      status: 'open',
+      createdAt: '2026-05-04T12:00:00.000Z',
+    };
+
+    // Get clarification
+    mockSend.mockResolvedValueOnce({ Item: clarification });
+    // Update clarification
+    mockSend.mockResolvedValueOnce({});
+    // Get candidate to update
+    mockSend.mockResolvedValueOnce({
+      Item: {
+        candidateId: 'cand_xyz12345',
+        proposedName: 'Stingray Live',
+        proposedDate: '2026-05-15',
+        status: 'proposed',
+      },
+    });
+    // Update candidate with time
+    mockSend.mockResolvedValueOnce({});
+
+    const result = await resolveClarification({
+      clarificationId: 'clar_time1234',
+      freeformValue: '21:00',
+      resolvedBy: 'user_123',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.resolution).toBe('21:00');
+  });
+
+  it('should normalise time input (9 -> 21:00 for PM assumption)', async () => {
+    const clarification = {
+      clarificationId: 'clar_time1234',
+      candidateId: 'cand_xyz12345',
+      question: 'What time does this event start?',
+      questionType: 'event_time',
+      options: [],
+      status: 'open',
+    };
+
+    mockSend.mockResolvedValueOnce({ Item: clarification });
+    mockSend.mockResolvedValueOnce({});
+    mockSend.mockResolvedValueOnce({
+      Item: { candidateId: 'cand_xyz12345', proposedName: 'Test Event' },
+    });
+    mockSend.mockResolvedValueOnce({});
+
+    const result = await resolveClarification({
+      clarificationId: 'clar_time1234',
+      freeformValue: '9',
+      resolvedBy: 'user_123',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.resolution).toBe('21:00'); // Assumes PM for grassroots gigs
+  });
+
   it('should remove resolved ambiguity and recalculate completeness', async () => {
     const clarification = {
       clarificationId: 'clar_test1234',
