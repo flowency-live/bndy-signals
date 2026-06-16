@@ -1,0 +1,141 @@
+[
+  {
+    "in": "9pm",
+    "out": "21:00",
+    "note": "meridiem pm"
+  },
+  {
+    "in": "9 PM",
+    "out": "21:00"
+  },
+  {
+    "in": "8:30pm",
+    "out": "20:30"
+  },
+  {
+    "in": "9.30pm",
+    "out": "21:30",
+    "note": "dot as colon"
+  },
+  {
+    "in": "21:00",
+    "out": "21:00",
+    "note": "already 24h"
+  },
+  {
+    "in": "2:00:00 PM",
+    "out": "14:00",
+    "note": "strip seconds"
+  },
+  {
+    "in": "7 30pm",
+    "out": "19:30",
+    "note": "space as separator"
+  },
+  {
+    "in": "915pm",
+    "out": "21:15",
+    "note": "no separator, 3-4 digits + meridiem"
+  },
+  {
+    "in": "13:30pm",
+    "out": "13:30",
+    "note": "24h value already >12 -> ignore stray pm, do NOT add 12"
+  },
+  {
+    "in": "9pm - 11pm",
+    "out": "21:00",
+    "note": "range -> take start"
+  },
+  {
+    "in": "8.30pm - 10.30pm",
+    "out": "20:30"
+  },
+  {
+    "in": "9pm, tickets £12.50",
+    "out": "21:00",
+    "note": "strip trailing price/notes"
+  },
+  {
+    "in": "(Sunday matinee 3-7pm)",
+    "out": "15:00",
+    "note": "matinee, range start, parenthetical"
+  },
+  {
+    "in": "7:12 AM",
+    "out": "21:00",
+    "note": "KLMA spreadsheet time-corruption sentinel -> default 21:00 + provenance note",
+    "provenance": "defaulted_from_corrupt_time"
+  },
+  {
+    "in": "07:12",
+    "out": "21:00",
+    "provenance": "defaulted_from_corrupt_time"
+  },
+  {
+    "in": "7:12:00 AM",
+    "out": "21:00",
+    "provenance": "defaulted_from_corrupt_time"
+  },
+  {
+    "in": "TBC",
+    "out": null,
+    "note": "explicit unknown -> null (then config default may apply, mark inferred)"
+  },
+  {
+    "in": "",
+    "out": null,
+    "note": "blank -> null; eventPolicy.missingTimeDefault=21:00 applies as INFERRED"
+  },
+  {
+    "in": "10pm",
+    "out": "22:00",
+    "note": "observed"
+  },
+  {
+    "in": "9:30",
+    "out": "21:30",
+    "note": "observed; bare H:MM, no meridiem -> evening default (hour 1-11 => PM)"
+  },
+  {
+    "in": "9",
+    "out": "21:00",
+    "note": "bare hour, no meridiem -> evening default PM"
+  },
+  {
+    "in": "£15.00 adv",
+    "out": null,
+    "note": "observed (Eleven); PRICE ONLY, no time -> null + park/anomaly, do not invent"
+  },
+  {
+    "in": "7 PM  £10",
+    "out": "19:00",
+    "note": "observed; extract time, drop price"
+  },
+  {
+    "in": "20:00  £7.00",
+    "out": "20:00",
+    "note": "observed; extract time, drop price"
+  },
+  {
+    "in": "9pm, free entry, all welcome",
+    "out": "21:00",
+    "note": "observed; strip notes"
+  },
+  {
+    "in": "5:00 PM to 7:00 PM",
+    "out": "17:00",
+    "note": "observed; 'to' range -> start"
+  },
+  {
+    "in": "4-30",
+    "out": "16:30",
+    "note": "observed; ambiguous afternoon, hyphen as colon -> 16:30, FLAG inferred/review",
+    "provenance": "inferred_afternoon"
+  },
+  {
+    "in": "Saturday, December 30, 1899",
+    "out": null,
+    "note": "observed; DATE leaked into time column -> null + anomaly review item, keep event date"
+  }
+]

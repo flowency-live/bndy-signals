@@ -1,0 +1,884 @@
+{
+  "sourceId": "klma-stoke-gig-list",
+  "runDate": "2026-06-14",
+  "priorRunDate": "2026-06-13",
+  "counts": {
+    "added": 3,
+    "cancelledCandidates": 2,
+    "pastDropped": 33,
+    "unchanged": 341
+  },
+  "added": [
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:3168b8319cf9",
+      "date": "2026-06-21",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Express, Crewe",
+        "canonicalName": "The Express, Crewe",
+        "region": "Cheshire",
+        "slug": "the-express-crewe"
+      },
+      "artist": {
+        "sourceName": "Afterglow",
+        "canonicalName": "Afterglow",
+        "slug": "afterglow"
+      },
+      "genre": "Rock/pop",
+      "url": "https://facebook.com/events/x1",
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:0a35871436d2",
+      "date": "2026-06-22",
+      "startTime": "20:30",
+      "venue": {
+        "sourceName": "The Bush At Brown Edge",
+        "canonicalName": "The Bush At Brown Edge",
+        "region": "Staffordshire",
+        "slug": "the-bush-at-brown-edge"
+      },
+      "artist": {
+        "sourceName": "Circa81",
+        "canonicalName": "Circa81",
+        "slug": "circa81"
+      },
+      "genre": "Electro 80s",
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:f1496ee3e4d5",
+      "date": "2026-06-23",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Britannia Inn",
+        "canonicalName": "The Britannia Inn",
+        "region": "Staffordshire",
+        "slug": "the-britannia-inn"
+      },
+      "artist": {
+        "sourceName": "Andy Costello",
+        "canonicalName": "Andy Costello",
+        "slug": "andy-costello"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    }
+  ],
+  "cancelledCandidates": [
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:5126ea38c53e",
+      "date": "2026-06-16",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Glebe Stoke",
+        "canonicalName": "The Glebe Stoke",
+        "region": "Staffordshire",
+        "slug": "the-glebe-stoke"
+      },
+      "artist": {
+        "sourceName": "Malpractice + Voodoo Voodoo + Nick Degg",
+        "canonicalName": "Malpractice + Voodoo Voodoo + Nick Degg",
+        "slug": "malpractice-voodoo-voodoo-nick-degg"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:f85d67c4b261",
+      "date": "2026-06-17",
+      "startTime": "19:00",
+      "venue": {
+        "sourceName": "Market Quarter, Congleton",
+        "canonicalName": "Market Quarter, Congleton",
+        "region": "Cheshire",
+        "slug": "market-quarter-congleton"
+      },
+      "artist": {
+        "sourceName": "Danny Brab",
+        "canonicalName": "Danny Brab",
+        "slug": "danny-brab"
+      },
+      "genre": "Indie, Britpop and US alternative scene",
+      "url": null,
+      "confidence": 1.0,
+      "parseWarnings": []
+    }
+  ],
+  "pastDropped": [
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:2aa7636cc192",
+      "date": "2026-06-13",
+      "startTime": "20:30",
+      "venue": {
+        "sourceName": "The Cock Inn Leek",
+        "canonicalName": "The Cock Inn Leek",
+        "region": "Staffordshire",
+        "slug": "the-cock-inn-leek"
+      },
+      "artist": {
+        "sourceName": "Adam Forman",
+        "canonicalName": "Adam Forman",
+        "slug": "adam-forman"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:d158113d7b40",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Express, Crewe",
+        "canonicalName": "The Express, Crewe",
+        "region": "Cheshire",
+        "slug": "the-express-crewe"
+      },
+      "artist": {
+        "sourceName": "Afterglow",
+        "canonicalName": "Afterglow",
+        "slug": "afterglow"
+      },
+      "genre": "Rock/pop",
+      "url": "https://facebook.com/events/s/back-at-the-express/2482198855616713/",
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:2b55cdf2d25d",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Britannia Inn",
+        "canonicalName": "The Britannia Inn",
+        "region": "Staffordshire",
+        "slug": "the-britannia-inn"
+      },
+      "artist": {
+        "sourceName": "Andy Costello",
+        "canonicalName": "Andy Costello",
+        "slug": "andy-costello"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:175b0ee4d68d",
+      "date": "2026-06-13",
+      "startTime": "22:00",
+      "venue": {
+        "sourceName": "The Shamrock, Macclesfield",
+        "canonicalName": "The Shamrock, Macclesfield",
+        "region": "Cheshire",
+        "slug": "the-shamrock-macclesfield"
+      },
+      "artist": {
+        "sourceName": "Ant Clowes Duo",
+        "canonicalName": "Ant Clowes Duo",
+        "slug": "ant-clowes-duo"
+      },
+      "genre": "Acoustic Rock, Pop and Irish Shenanigans",
+      "url": "www.antclowesmusicduo.co.uk",
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:a8232f70bc5a",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "Red Lion Market St Leek.",
+        "canonicalName": "Red Lion Market St Leek",
+        "region": "Staffordshire",
+        "slug": "red-lion-market-st-leek"
+      },
+      "artist": {
+        "sourceName": "Bad Soul Buskers",
+        "canonicalName": "Bad Soul Buskers",
+        "slug": "bad-soul-buskers"
+      },
+      "genre": "Pop/Rock",
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:20257e75d248",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Cosey, Haslington",
+        "canonicalName": "The Cosey, Haslington",
+        "region": "Cheshire",
+        "slug": "the-cosey-haslington"
+      },
+      "artist": {
+        "sourceName": "Bobcat Billy's Moonshine Mission",
+        "canonicalName": "Bobcat Billy's Moonshine Mission",
+        "slug": "bobcat-billys-moonshine-mission"
+      },
+      "genre": "Rock'n'Roll",
+      "url": "www.thecosey.co.uk",
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:13bc44a14d91",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Bush At Brown Edge",
+        "canonicalName": "The Bush At Brown Edge",
+        "region": "Staffordshire",
+        "slug": "the-bush-at-brown-edge"
+      },
+      "artist": {
+        "sourceName": "Circa81",
+        "canonicalName": "Circa81",
+        "slug": "circa81"
+      },
+      "genre": "Electro 80s and 90s",
+      "url": "https://www.facebook.com/share/1cZbf1y1o8/",
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:3d1bac9bddb4",
+      "date": "2026-06-13",
+      "startTime": "13:30",
+      "venue": {
+        "sourceName": "Sixtowns, Wedgwood",
+        "canonicalName": "Sixtowns, Wedgwood",
+        "region": "Staffordshire",
+        "slug": "sixtowns-wedgwood"
+      },
+      "artist": {
+        "sourceName": "Danny Brab",
+        "canonicalName": "Danny Brab",
+        "slug": "danny-brab"
+      },
+      "genre": "Indie, Britpop and US alternative",
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:e5cb568dec20",
+      "date": "2026-06-13",
+      "startTime": "20:30",
+      "venue": {
+        "sourceName": "The Wilkes Head Leek",
+        "canonicalName": "The Wilkes Head Leek",
+        "region": "Staffordshire",
+        "slug": "the-wilkes-head-leek"
+      },
+      "artist": {
+        "sourceName": "Dutchie Ferguson",
+        "canonicalName": "Dutchie Ferguson",
+        "slug": "dutchie-ferguson"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:93ca015910bb",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Nags Head Macclesfield",
+        "canonicalName": "The Nags Head, Macclesfield",
+        "region": "Cheshire",
+        "slug": "the-nags-head-macclesfield"
+      },
+      "artist": {
+        "sourceName": "Eaton Park",
+        "canonicalName": "Eaton Park",
+        "slug": "eaton-park"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:495a450627be",
+      "date": "2026-06-13",
+      "startTime": "22:00",
+      "venue": {
+        "sourceName": "Lymelight Boulevard.",
+        "canonicalName": "Lymelight Boulevard",
+        "region": "Staffordshire",
+        "slug": "lymelight-boulevard"
+      },
+      "artist": {
+        "sourceName": "Gps Trio",
+        "canonicalName": "Gps Trio",
+        "slug": "gps-trio"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:c5dc906910db",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "Norton Central Social Club",
+        "canonicalName": "Norton Central Social Club",
+        "region": "Staffordshire",
+        "slug": "norton-central-social-club"
+      },
+      "artist": {
+        "sourceName": "Hannah Christina",
+        "canonicalName": "Hannah Christina",
+        "slug": "hannah-christina"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:5ccfd02feea6",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Old Red Lion, Froghall Road, Ipstones, Stoke St11 9eq",
+        "canonicalName": "The Old Red Lion, Froghall Road, Ipstones, Stoke",
+        "region": "Staffordshire",
+        "slug": "the-old-red-lion-froghall-road-ipstones-stoke"
+      },
+      "artist": {
+        "sourceName": "Incognito - Party Band",
+        "canonicalName": "Incognito - Party Band",
+        "slug": "incognito-party-band"
+      },
+      "genre": "Covers",
+      "url": "facebook.com/profile.php?id=61575399733795",
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:00488e80481f",
+      "date": "2026-06-13",
+      "startTime": "20:00",
+      "venue": {
+        "sourceName": "Weston Coyney Private Social Club.",
+        "canonicalName": "Weston Coyney Private Social Club",
+        "region": "Staffordshire",
+        "slug": "weston-coyney-private-social-club"
+      },
+      "artist": {
+        "sourceName": "Kloe Louise Artiste",
+        "canonicalName": "Kloe Louise Artiste",
+        "slug": "kloe-louise-artiste"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:c4b4297917e0",
+      "date": "2026-06-13",
+      "startTime": "20:30",
+      "venue": {
+        "sourceName": "The Bridge Inn Stone",
+        "canonicalName": "The Bridge Inn Stone",
+        "region": "Staffordshire",
+        "slug": "the-bridge-inn-stone"
+      },
+      "artist": {
+        "sourceName": "Mel And Dan",
+        "canonicalName": "Mel And Dan",
+        "slug": "mel-and-dan"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:5ca0e8c52b31",
+      "date": "2026-06-13",
+      "startTime": "21:30",
+      "venue": {
+        "sourceName": "The Black Lion In Trent Vale",
+        "canonicalName": "The Black Lion In Trent Vale",
+        "region": "Staffordshire",
+        "slug": "the-black-lion-in-trent-vale"
+      },
+      "artist": {
+        "sourceName": "Mike & The Floorfillers",
+        "canonicalName": "Mike & The Floorfillers",
+        "slug": "mike-the-floorfillers"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:d734d9e9cc27",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "Waggon & Horses",
+        "canonicalName": "Waggon & Horses",
+        "region": "Staffordshire",
+        "slug": "waggon-horses"
+      },
+      "artist": {
+        "sourceName": "Music Justified",
+        "canonicalName": "Music Justified",
+        "slug": "music-justified"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.8,
+      "parseWarnings": [
+        "region_defaulted",
+        "time_missing_blank",
+        "missing_time_defaulted_21:00"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:2396bdfed651",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Black Cock Inn",
+        "canonicalName": "The Black Cock Inn",
+        "region": "Staffordshire",
+        "slug": "the-black-cock-inn"
+      },
+      "artist": {
+        "sourceName": "One Night Stand",
+        "canonicalName": "One Night Stand",
+        "slug": "one-night-stand"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:75beaee31af6",
+      "date": "2026-06-13",
+      "startTime": "19:00",
+      "venue": {
+        "sourceName": "Holditch Club",
+        "canonicalName": "Holditch Club",
+        "region": "Staffordshire",
+        "slug": "holditch-club"
+      },
+      "artist": {
+        "sourceName": "Roy Chubby Brown Tribute Act \"chubby Gc\" And \"gary Gobstopper",
+        "canonicalName": "Roy Chubby Brown Tribute Act \"chubby Gc\" And \"gary Gobstopper",
+        "slug": "roy-chubby-brown-tribute-act-chubby-gc-and-gary-gobstopper"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:d39e21bb4238",
+      "date": "2026-06-13",
+      "startTime": "19:30",
+      "venue": {
+        "sourceName": "The Park Inn.",
+        "canonicalName": "The Park Inn",
+        "region": "Staffordshire",
+        "slug": "the-park-inn"
+      },
+      "artist": {
+        "sourceName": "Sam Hackney",
+        "canonicalName": "Sam Hackney",
+        "slug": "sam-hackney"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:e1f58032cf21",
+      "date": "2026-06-13",
+      "startTime": "21:30",
+      "venue": {
+        "sourceName": "Congress Longton",
+        "canonicalName": "Congress Longton",
+        "region": "Staffordshire",
+        "slug": "congress-longton"
+      },
+      "artist": {
+        "sourceName": "Southbound",
+        "canonicalName": "Southbound",
+        "slug": "southbound"
+      },
+      "genre": "Rock",
+      "url": null,
+      "confidence": 0.8,
+      "parseWarnings": [
+        "region_defaulted",
+        "inferred_evening"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:7c23d4d22d7d",
+      "date": "2026-06-13",
+      "startTime": "22:00",
+      "venue": {
+        "sourceName": "The Swan Stone",
+        "canonicalName": "The Swan Stone",
+        "region": "Staffordshire",
+        "slug": "the-swan-stone"
+      },
+      "artist": {
+        "sourceName": "Steppin Lane",
+        "canonicalName": "Steppin Lane",
+        "slug": "steppin-lane"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:b5c98e07fd55",
+      "date": "2026-06-13",
+      "startTime": "20:30",
+      "venue": {
+        "sourceName": "Blurton Club",
+        "canonicalName": "Blurton Club",
+        "region": "Staffordshire",
+        "slug": "blurton-club"
+      },
+      "artist": {
+        "sourceName": "Tasha Pop",
+        "canonicalName": "Tasha Pop",
+        "slug": "tasha-pop"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:8e963975dd22",
+      "date": "2026-06-13",
+      "startTime": "21:30",
+      "venue": {
+        "sourceName": "Granvilles Stone",
+        "canonicalName": "Granvilles Stone",
+        "region": "Staffordshire",
+        "slug": "granvilles-stone"
+      },
+      "artist": {
+        "sourceName": "The Black Jeans Party Rock Band",
+        "canonicalName": "The Black Jeans Party Rock Band",
+        "slug": "the-black-jeans-party-rock-band"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:47cf0908136f",
+      "date": "2026-06-13",
+      "startTime": "21:30",
+      "venue": {
+        "sourceName": "The Queens Hotel Macclesfield",
+        "canonicalName": "The Queens Hotel, Macclesfield",
+        "region": "Cheshire",
+        "slug": "the-queens-hotel-macclesfield"
+      },
+      "artist": {
+        "sourceName": "The Newman Rockets",
+        "canonicalName": "The Newman Rockets",
+        "slug": "the-newman-rockets"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 1.0,
+      "parseWarnings": []
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:d7fd6dba7411",
+      "date": "2026-06-13",
+      "startTime": "21:30",
+      "venue": {
+        "sourceName": "The Black Horse Endon",
+        "canonicalName": "The Black Horse Endon",
+        "region": "Staffordshire",
+        "slug": "the-black-horse-endon"
+      },
+      "artist": {
+        "sourceName": "The Vanz Roxx",
+        "canonicalName": "The Vanz Roxx",
+        "slug": "the-vanz-roxx"
+      },
+      "genre": "Rock",
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:8efba590b419",
+      "date": "2026-06-13",
+      "startTime": "20:30",
+      "venue": {
+        "sourceName": "The Old Bulldog",
+        "canonicalName": "The Old Bulldog",
+        "region": "Staffordshire",
+        "slug": "the-old-bulldog"
+      },
+      "artist": {
+        "sourceName": "The Variants",
+        "canonicalName": "The Variants",
+        "slug": "the-variants"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:dfd2d07b46fd",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The John Marstons",
+        "canonicalName": "The John Marstons",
+        "region": "Staffordshire",
+        "slug": "the-john-marstons"
+      },
+      "artist": {
+        "sourceName": "Tourniquet-Rock",
+        "canonicalName": "Tourniquet-Rock",
+        "slug": "tourniquet-rock"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.8,
+      "parseWarnings": [
+        "region_defaulted",
+        "time_missing_blank",
+        "missing_time_defaulted_21:00"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:bbf9979d58ed",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Green Star, Smallthorne",
+        "canonicalName": "The Green Star, Smallthorne",
+        "region": "Staffordshire",
+        "slug": "the-green-star-smallthorne"
+      },
+      "artist": {
+        "sourceName": "Trilogy Rock Band",
+        "canonicalName": "Trilogy Rock Band",
+        "slug": "trilogy-rock-band"
+      },
+      "genre": "Classic Rock",
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:017ca350a069",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "Den Engel Leek",
+        "canonicalName": "Den Engel Leek",
+        "region": "Staffordshire",
+        "slug": "den-engel-leek"
+      },
+      "artist": {
+        "sourceName": "Vala",
+        "canonicalName": "Vala",
+        "slug": "vala"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.8,
+      "parseWarnings": [
+        "region_defaulted",
+        "date_in_time_col",
+        "missing_time_defaulted_21:00"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:30012adf7141",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Roebuck, Forsbrook",
+        "canonicalName": "The Roebuck, Forsbrook",
+        "region": "Staffordshire",
+        "slug": "the-roebuck-forsbrook"
+      },
+      "artist": {
+        "sourceName": "Whiskey Rebel",
+        "canonicalName": "Whiskey Rebel",
+        "slug": "whiskey-rebel"
+      },
+      "genre": "Rock and pop",
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:44d19fbbcc84",
+      "date": "2026-06-13",
+      "startTime": "21:00",
+      "venue": {
+        "sourceName": "The Rose & Crown Stanley",
+        "canonicalName": "The Rose & Crown Stanley",
+        "region": "Staffordshire",
+        "slug": "the-rose-crown-stanley"
+      },
+      "artist": {
+        "sourceName": "Years Gone By",
+        "canonicalName": "Years Gone By",
+        "slug": "years-gone-by"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.8,
+      "parseWarnings": [
+        "region_defaulted",
+        "time_missing_blank",
+        "missing_time_defaulted_21:00"
+      ]
+    },
+    {
+      "sourceId": "klma-stoke-gig-list",
+      "externalId": "klma-stoke-gig-list:c1f89b26d2d5",
+      "date": "2026-06-13",
+      "startTime": "20:00",
+      "venue": {
+        "sourceName": "Grumpy Bastards Motorcycles",
+        "canonicalName": "Grumpy Bastards Motorcycles",
+        "region": "Staffordshire",
+        "slug": "grumpy-bastards-motorcycles"
+      },
+      "artist": {
+        "sourceName": "The Lads from Macc",
+        "canonicalName": "The Lads from Macc",
+        "slug": "the-lads-from-macc"
+      },
+      "genre": null,
+      "url": null,
+      "confidence": 0.9,
+      "parseWarnings": [
+        "region_defaulted"
+      ]
+    }
+  ]
+}

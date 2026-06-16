@@ -1,0 +1,18 @@
+{
+  "events_06_13": 378,
+  "parked_06_13": 102,
+  "park_reasons": {
+    "specialist_venue": 70,
+    "multi_act": 24,
+    "form_metadata": 8
+  },
+  "distinct_venues": 185,
+  "distinct_artists": 158,
+  "externalid_collisions": 2,
+  "diff_06_14": {
+    "added": 3,
+    "cancelledCandidates": 2,
+    "pastDropped": 33,
+    "unchanged": 341
+  }
+}

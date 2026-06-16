@@ -1,0 +1,151 @@
+{
+  "_meta": {
+    "source": "klma-stoke-gig-list",
+    "generated_from": "live sheet 2026-06-13 (gviz)",
+    "IMPORTANT": "These venue clusters were OBSERVED in real data. The Mash/Railway-Greenfield/Ashton-Jubilee gotchas in operator memory belong to the gigs-news feed, NOT KLMA — do not import them here.",
+    "updated": "2026-06-13 — added high-frequency clusters from live resolution (Swiftys, Swan, Moorland Inn, Roebuck)",
+    "ROLE": "EVIDENCE + tiny test seed, NOT the dedup mechanism. Spelling/format/apostrophe/spacing variants must be collapsed ALGORITHMICALLY via a slug-strength canonical key (strip apostrophes+punct+case), not listed here. Different-name-same-place cases are resolved by Google place_id + state map + fuzzy (Epic 5), and the exception store is populated by REVIEW/learning, not authored per venue. See architecture/canonicalisation-not-hardcoded-variants.md."
+  },
+  "canonicalisationRules": [
+    "Trim leading/trailing whitespace (rampant in this sheet).",
+    "Normalise curly apostrophe ’ -> ' before compare/slug.",
+    "Strip embedded UK postcode (regex: \\b[A-Z]{1,2}\\d[A-Z\\d]?\\s*\\d[A-Z]{2}\\b, case-insensitive) before slug/hash.",
+    "Normalise ' in <Town>' and ', <Town>' to a single ', <Town>' form.",
+    "Canonicalise BEFORE generating venue external-id slug, BEFORE specialist/multi-act matching, and BEFORE diff keying — otherwise variants create duplicate venues every run."
+  ],
+  "venueVariantClusters": [
+    {
+      "canonical": "The Nags Head, Macclesfield",
+      "variants": [
+        "The Nag's Head Macclesfield",
+        "The Nag's Head in Macclesfield",
+        "The Nags Head Macclesfield",
+        "The Nags Head in Macclesfield"
+      ],
+      "region": "Cheshire"
+    },
+    {
+      "canonical": "The Cosey, Haslington",
+      "variants": [
+        "The Cosey, Haslington",
+        "The Cosey Haslington",
+        "The Cosey Club Near Crewe",
+        "Cosey Club Haslington Cw1 5st"
+      ],
+      "region": "Cheshire"
+    },
+    {
+      "canonical": "The Rigger, Newcastle-under-Lyme",
+      "variants": [
+        "The Rigger",
+        "The Rigger Venue, Newcastle-Under-Lyme St5 1bt",
+        "The Rigger Venue, Newcastle-under-lyme ST5 1BT"
+      ],
+      "region": "Staffordshire",
+      "flag": "multi_act"
+    },
+    {
+      "canonical": "Artisan Tap, Hartshill",
+      "variants": [
+        "Artisan Tap",
+        "Artisan Tap, Hartshill",
+        "The Artisan Tap"
+      ],
+      "region": "Staffordshire",
+      "flag": "specialist"
+    },
+    {
+      "canonical": "The Queens Hotel, Macclesfield",
+      "variants": [
+        "The Queens Hotel Macclesfield",
+        "The Queens Hotel, Macclesfield"
+      ],
+      "region": "Cheshire"
+    },
+    {
+      "canonical": "Crewe Market Hall",
+      "variants": [
+        "Crewe Market Hall, Crewe",
+        "Market Hall, Crewe"
+      ],
+      "region": "Cheshire"
+    },
+    {
+      "canonical": "Alsager Civic",
+      "variants": [
+        "Alsager Civic",
+        "Alsager Civic center."
+      ],
+      "region": "Cheshire"
+    },
+    {
+      "canonical": "Swiftys, Meir",
+      "variants": [
+        "Swiftys, Meir",
+        "Swiftys. Meir",
+        "Swiftys"
+      ],
+      "region": "Staffordshire",
+      "bndyId": "aayxv4IGQbBmXBpk7WZL"
+    },
+    {
+      "canonical": "The Swan, Stone",
+      "variants": [
+        "The Swan, Stone",
+        "The Swan Stone"
+      ],
+      "region": "Staffordshire",
+      "bndyId": "74BjwiHSxHDxdUghRVB9",
+      "note": "bndy name is 'Swan Inn' (name match 13%)"
+    },
+    {
+      "canonical": "The Moorland Inn, Burslem",
+      "variants": [
+        "Moorland inn, burslem",
+        "Moorland Inn Burslem",
+        "Moorland Inn Smallthorne"
+      ],
+      "region": "Staffordshire",
+      "bndyId": "hbXt7haW5QcV06fHixD0"
+    },
+    {
+      "canonical": "The Roebuck, Forsbrook",
+      "variants": [
+        "The Roebuck, Forsbrook",
+        "Roebuck Forsbrook"
+      ],
+      "region": "Staffordshire",
+      "bndyId": "I7RcAfPu0g4DP7kXdlaL"
+    }
+  ],
+  "specialistVenueSlugs": [
+    "artisan-tap",
+    "eleven"
+  ],
+  "multiActVenueSlugs": [
+    "the-rigger-newcastle-under-lyme"
+  ],
+  "regionOverride": {
+    "defaultRegion": "Staffordshire",
+    "defaultCity": "Stoke-on-Trent",
+    "rule": "If the venue string contains a known Cheshire town, set region=Cheshire and city=<that town>; NEVER fall back to defaultCity for an out-of-region venue. Unknown town + no postcode => REVIEW, do not default.",
+    "cheshireTowns": [
+      "Crewe",
+      "Macclesfield",
+      "Haslington",
+      "Sandbach",
+      "Congleton",
+      "Nantwich",
+      "Alsager",
+      "Wilmslow",
+      "Knutsford"
+    ]
+  },
+  "artistRules": [
+    "Conservative matching (names less unique than venues).",
+    "Strip trailing whitespace + normalise ’ -> '.",
+    "For names ending Band/Duo/Trio/Live/Acoustic/Show, also search the stripped core token (spec artist ladder step 5).",
+    "Do NOT strip descriptive suffix from the stored canonical name unless confirmed an alias (e.g. 'Incognito - Party Band' may be the act's real billing).",
+    "Same/near name in same region = existing entity (reuse), not a new create."
+  ]
+}

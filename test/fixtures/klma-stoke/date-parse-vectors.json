@@ -1,0 +1,42 @@
+[
+  {
+    "in": "Saturday, June 13, 2026",
+    "out": "2026-06-13",
+    "action": "event",
+    "note": "valid long-form date"
+  },
+  {
+    "in": "Sunday, June 14, 2026",
+    "out": "2026-06-14",
+    "action": "event"
+  },
+  {
+    "in": "Saturday, December 30, 1899",
+    "out": null,
+    "action": "park",
+    "reason": "serial-zero sentinel; spreadsheet epoch-0, never import"
+  },
+  {
+    "in": "1/1/0125",
+    "out": null,
+    "action": "skip_metadata",
+    "note": "form header junk row"
+  },
+  {
+    "in": "1/4/0202",
+    "out": null,
+    "action": "skip_metadata"
+  },
+  {
+    "in": "1/5/2026",
+    "out": null,
+    "action": "skip_metadata",
+    "note": "row carries form instructions ('You can add your own gigs') in artist col"
+  },
+  {
+    "in": "",
+    "out": null,
+    "action": "skip",
+    "note": "blank date -> not an event row"
+  }
+]

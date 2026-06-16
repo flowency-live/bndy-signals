@@ -1,0 +1,953 @@
+{
+  "adam-forman": {
+    "canonicalName": "Adam Forman",
+    "sourceNames": [
+      "Adam Forman"
+    ]
+  },
+  "afterglow": {
+    "canonicalName": "Afterglow",
+    "sourceNames": [
+      "Afterglow"
+    ]
+  },
+  "andy-costello": {
+    "canonicalName": "Andy Costello",
+    "sourceNames": [
+      "Andy Costello"
+    ]
+  },
+  "ant-clowes-duo": {
+    "canonicalName": "Ant Clowes Duo",
+    "sourceNames": [
+      "Ant Clowes Duo"
+    ]
+  },
+  "bad-soul-buskers": {
+    "canonicalName": "Bad Soul Buskers",
+    "sourceNames": [
+      "Bad Soul Buskers"
+    ]
+  },
+  "bobcat-billys-moonshine-mission": {
+    "canonicalName": "Bobcat Billy's Moonshine Mission",
+    "sourceNames": [
+      "Bobcat Billy's Moonshine Mission"
+    ]
+  },
+  "circa81": {
+    "canonicalName": "Circa81",
+    "sourceNames": [
+      "Circa81"
+    ]
+  },
+  "danny-brab": {
+    "canonicalName": "Danny Brab",
+    "sourceNames": [
+      "Danny Brab"
+    ]
+  },
+  "dutchie-ferguson": {
+    "canonicalName": "Dutchie Ferguson",
+    "sourceNames": [
+      "Dutchie Ferguson"
+    ]
+  },
+  "eaton-park": {
+    "canonicalName": "Eaton Park",
+    "sourceNames": [
+      "Eaton Park"
+    ]
+  },
+  "gps-trio": {
+    "canonicalName": "Gps Trio",
+    "sourceNames": [
+      "Gps Trio"
+    ]
+  },
+  "hannah-christina": {
+    "canonicalName": "Hannah Christina",
+    "sourceNames": [
+      "Hannah Christina"
+    ]
+  },
+  "incognito-party-band": {
+    "canonicalName": "Incognito - Party Band",
+    "sourceNames": [
+      "Incognito - Party Band"
+    ]
+  },
+  "kloe-louise-artiste": {
+    "canonicalName": "Kloe Louise Artiste",
+    "sourceNames": [
+      "Kloe Louise Artiste"
+    ]
+  },
+  "mel-and-dan": {
+    "canonicalName": "Mel And Dan",
+    "sourceNames": [
+      "Mel And Dan"
+    ]
+  },
+  "mike-the-floorfillers": {
+    "canonicalName": "Mike & The Floorfillers",
+    "sourceNames": [
+      "Mike & The Floorfillers"
+    ]
+  },
+  "music-justified": {
+    "canonicalName": "Music Justified",
+    "sourceNames": [
+      "Music Justified"
+    ]
+  },
+  "one-night-stand": {
+    "canonicalName": "One Night Stand",
+    "sourceNames": [
+      "One Night Stand"
+    ]
+  },
+  "roy-chubby-brown-tribute-act-chubby-gc-and-gary-gobstopper": {
+    "canonicalName": "Roy Chubby Brown Tribute Act \"chubby Gc\" And \"gary Gobstopper",
+    "sourceNames": [
+      "Roy Chubby Brown Tribute Act \"chubby Gc\" And \"gary Gobstopper"
+    ]
+  },
+  "sam-hackney": {
+    "canonicalName": "Sam Hackney",
+    "sourceNames": [
+      "Sam Hackney"
+    ]
+  },
+  "southbound": {
+    "canonicalName": "Southbound",
+    "sourceNames": [
+      "Southbound"
+    ]
+  },
+  "steppin-lane": {
+    "canonicalName": "Steppin Lane",
+    "sourceNames": [
+      "Steppin Lane"
+    ]
+  },
+  "tasha-pop": {
+    "canonicalName": "Tasha Pop",
+    "sourceNames": [
+      "Tasha Pop"
+    ]
+  },
+  "the-black-jeans-party-rock-band": {
+    "canonicalName": "The Black Jeans Party Rock Band",
+    "sourceNames": [
+      "The Black Jeans Party Rock Band"
+    ]
+  },
+  "the-newman-rockets": {
+    "canonicalName": "The Newman Rockets",
+    "sourceNames": [
+      "The Newman Rockets"
+    ]
+  },
+  "the-vanz-roxx": {
+    "canonicalName": "The Vanz Roxx",
+    "sourceNames": [
+      "The Vanz Roxx"
+    ]
+  },
+  "the-variants": {
+    "canonicalName": "The Variants",
+    "sourceNames": [
+      "The Variants"
+    ]
+  },
+  "tourniquet-rock": {
+    "canonicalName": "Tourniquet-Rock",
+    "sourceNames": [
+      "Tourniquet-Rock"
+    ]
+  },
+  "trilogy-rock-band": {
+    "canonicalName": "Trilogy Rock Band",
+    "sourceNames": [
+      "Trilogy Rock Band"
+    ]
+  },
+  "vala": {
+    "canonicalName": "Vala",
+    "sourceNames": [
+      "Vala"
+    ]
+  },
+  "whiskey-rebel": {
+    "canonicalName": "Whiskey Rebel",
+    "sourceNames": [
+      "Whiskey Rebel"
+    ]
+  },
+  "years-gone-by": {
+    "canonicalName": "Years Gone By",
+    "sourceNames": [
+      "Years Gone By"
+    ]
+  },
+  "the-lads-from-macc": {
+    "canonicalName": "The Lads from Macc",
+    "sourceNames": [
+      "The Lads from Macc"
+    ]
+  },
+  "albie-northern-soul-motown": {
+    "canonicalName": "Albie. Northern Soul & Motown",
+    "sourceNames": [
+      "Albie. Northern Soul & Motown"
+    ]
+  },
+  "dan-toft-and-mel": {
+    "canonicalName": "Dan Toft And Mel",
+    "sourceNames": [
+      "Dan Toft And Mel"
+    ]
+  },
+  "iwan-mitchell": {
+    "canonicalName": "Iwan Mitchell",
+    "sourceNames": [
+      "Iwan Mitchell"
+    ]
+  },
+  "m-j-acoustic": {
+    "canonicalName": "M J Acoustic",
+    "sourceNames": [
+      "M J Acoustic"
+    ]
+  },
+  "raised-on-radio": {
+    "canonicalName": "Raised on radio",
+    "sourceNames": [
+      "Raised on radio"
+    ]
+  },
+  "richie-stixx": {
+    "canonicalName": "Richie Stixx",
+    "sourceNames": [
+      "Richie Stixx"
+    ]
+  },
+  "sac-n-craic": {
+    "canonicalName": "Sac N Craic",
+    "sourceNames": [
+      "Sac N Craic"
+    ]
+  },
+  "sam-bloor": {
+    "canonicalName": "Sam Bloor",
+    "sourceNames": [
+      "Sam Bloor"
+    ]
+  },
+  "stone-cold-sober-ish": {
+    "canonicalName": "Stone Cold Sober...ish",
+    "sourceNames": [
+      "Stone Cold Sober....ish",
+      "Stone Cold Sober...ish"
+    ]
+  },
+  "malpractice-voodoo-voodoo-nick-degg": {
+    "canonicalName": "Malpractice + Voodoo Voodoo + Nick Degg",
+    "sourceNames": [
+      "Malpractice + Voodoo Voodoo + Nick Degg"
+    ]
+  },
+  "havoc": {
+    "canonicalName": "Havoc",
+    "sourceNames": [
+      "Havoc"
+    ]
+  },
+  "a-thousand-cuts-anti-meta-tba": {
+    "canonicalName": "A Thousand Cuts + Anti-Meta + Tba",
+    "sourceNames": [
+      "A Thousand Cuts + Anti-Meta + Tba"
+    ]
+  },
+  "california-soul-sista": {
+    "canonicalName": "California Soul Sista",
+    "sourceNames": [
+      "California Soul Sista"
+    ]
+  },
+  "craig-harrison": {
+    "canonicalName": "Craig Harrison",
+    "sourceNames": [
+      "Craig Harrison"
+    ]
+  },
+  "harmony-of-spheres-hos": {
+    "canonicalName": "Harmony Of Spheres - Hos",
+    "sourceNames": [
+      "Harmony Of Spheres - Hos"
+    ]
+  },
+  "stepping-lane": {
+    "canonicalName": "Stepping Lane",
+    "sourceNames": [
+      "Stepping Lane"
+    ]
+  },
+  "stone-cold-soberish": {
+    "canonicalName": "Stone Cold Soberish",
+    "sourceNames": [
+      "Stone Cold Soberish"
+    ]
+  },
+  "the-kilns": {
+    "canonicalName": "The Kilns",
+    "sourceNames": [
+      "The Kilns"
+    ]
+  },
+  "the-return-project": {
+    "canonicalName": "The Return Project",
+    "sourceNames": [
+      "The Return Project"
+    ]
+  },
+  "the-vanz": {
+    "canonicalName": "The Vanz",
+    "sourceNames": [
+      "The Vanz"
+    ]
+  },
+  "walters-bligh": {
+    "canonicalName": "Walters & Bligh",
+    "sourceNames": [
+      "Walters & Bligh"
+    ]
+  },
+  "blag": {
+    "canonicalName": "Blag",
+    "sourceNames": [
+      "Blag"
+    ]
+  },
+  "circa-81": {
+    "canonicalName": "Circa 81",
+    "sourceNames": [
+      "Circa 81"
+    ]
+  },
+  "crosshair": {
+    "canonicalName": "Crosshair",
+    "sourceNames": [
+      "CrossHair",
+      "Crosshair"
+    ]
+  },
+  "electric-landlady": {
+    "canonicalName": "Electric Landlady",
+    "sourceNames": [
+      "Electric Landlady"
+    ]
+  },
+  "hammered": {
+    "canonicalName": "Hammered",
+    "sourceNames": [
+      "Hammered"
+    ]
+  },
+  "kmk-kaiser-monkey-killers": {
+    "canonicalName": "Kmk-Kaiser Monkey Killers",
+    "sourceNames": [
+      "Kmk-Kaiser Monkey Killers"
+    ]
+  },
+  "magnetic-jellyfish": {
+    "canonicalName": "Magnetic Jellyfish",
+    "sourceNames": [
+      "Magnetic Jellyfish"
+    ]
+  },
+  "matt-dale": {
+    "canonicalName": "Matt Dale",
+    "sourceNames": [
+      "Matt Dale"
+    ]
+  },
+  "mikey-mike": {
+    "canonicalName": "Mikey Mike",
+    "sourceNames": [
+      "Mikey Mike"
+    ]
+  },
+  "notorious-80s": {
+    "canonicalName": "Notorious 80s",
+    "sourceNames": [
+      "Notorious 80s"
+    ]
+  },
+  "sound-generator": {
+    "canonicalName": "Sound Generator",
+    "sourceNames": [
+      "Sound Generator"
+    ]
+  },
+  "the-magnetic-jellyfish": {
+    "canonicalName": "The Magnetic Jellyfish",
+    "sourceNames": [
+      "The Magnetic Jellyfish"
+    ]
+  },
+  "adam-george-forman": {
+    "canonicalName": "Adam George Forman",
+    "sourceNames": [
+      "Adam George Forman"
+    ]
+  },
+  "classic-rockers-duo": {
+    "canonicalName": "Classic Rockers Duo",
+    "sourceNames": [
+      "Classic Rockers Duo"
+    ]
+  },
+  "drum-n-strum": {
+    "canonicalName": "Drum N Strum",
+    "sourceNames": [
+      "Drum N Strum"
+    ]
+  },
+  "liv-wilkes": {
+    "canonicalName": "Liv Wilkes",
+    "sourceNames": [
+      "Liv Wilkes"
+    ]
+  },
+  "sinini-ngwenya": {
+    "canonicalName": "Sinini Ngwenya",
+    "sourceNames": [
+      "Sinini Ngwenya"
+    ]
+  },
+  "vertical-pig": {
+    "canonicalName": "Vertical Pig",
+    "sourceNames": [
+      "Vertical Pig"
+    ]
+  },
+  "danny-friends-acoustic-night": {
+    "canonicalName": "Danny & Friends (acoustic Night)",
+    "sourceNames": [
+      "Danny & Friends (acoustic Night)"
+    ]
+  },
+  "good-habits": {
+    "canonicalName": "Good Habits",
+    "sourceNames": [
+      "Good Habits"
+    ]
+  },
+  "danny-friends": {
+    "canonicalName": "Danny & Friends",
+    "sourceNames": [
+      "Danny & Friends"
+    ]
+  },
+  "dawson-dean-word-of-mouth-solo": {
+    "canonicalName": "Dawson Dean + Word Of Mouth Solo",
+    "sourceNames": [
+      "Dawson Dean + Word Of Mouth Solo"
+    ]
+  },
+  "harmonic-fall": {
+    "canonicalName": "Harmonic Fall",
+    "sourceNames": [
+      "Harmonic Fall"
+    ]
+  },
+  "mike-and-the-floorfillers": {
+    "canonicalName": "Mike And The Floorfillers",
+    "sourceNames": [
+      "Mike And The Floorfillers"
+    ]
+  },
+  "phil-kirk": {
+    "canonicalName": "Phil Kirk",
+    "sourceNames": [
+      "Phil Kirk"
+    ]
+  },
+  "regan-webb": {
+    "canonicalName": "Regan Webb",
+    "sourceNames": [
+      "Regan Webb"
+    ]
+  },
+  "seeing-red": {
+    "canonicalName": "Seeing Red",
+    "sourceNames": [
+      "Seeing Red"
+    ]
+  },
+  "stop-the-clocks": {
+    "canonicalName": "Stop The Clocks",
+    "sourceNames": [
+      "Stop The Clocks"
+    ]
+  },
+  "25th-hour": {
+    "canonicalName": "25th Hour",
+    "sourceNames": [
+      "25th Hour"
+    ]
+  },
+  "adam-austin": {
+    "canonicalName": "Adam Austin",
+    "sourceNames": [
+      "Adam Austin"
+    ]
+  },
+  "ant-clowes": {
+    "canonicalName": "Ant Clowes",
+    "sourceNames": [
+      "Ant Clowes"
+    ]
+  },
+  "back-2-back": {
+    "canonicalName": "Back 2 Back",
+    "sourceNames": [
+      "Back 2 Back"
+    ]
+  },
+  "fever-train": {
+    "canonicalName": "Fever Train",
+    "sourceNames": [
+      "Fever Train"
+    ]
+  },
+  "gemmarae": {
+    "canonicalName": "GemmaRae",
+    "sourceNames": [
+      "GemmaRae"
+    ]
+  },
+  "harddrive": {
+    "canonicalName": "Harddrive",
+    "sourceNames": [
+      "Harddrive"
+    ]
+  },
+  "jason-keady": {
+    "canonicalName": "Jason Keady",
+    "sourceNames": [
+      "Jason Keady"
+    ]
+  },
+  "king-kurt": {
+    "canonicalName": "King Kurt",
+    "sourceNames": [
+      "King Kurt"
+    ]
+  },
+  "louis-wowra": {
+    "canonicalName": "Louis Wowra",
+    "sourceNames": [
+      "Louis Wowra"
+    ]
+  },
+  "marc-gallagher": {
+    "canonicalName": "Marc Gallagher",
+    "sourceNames": [
+      "Marc Gallagher"
+    ]
+  },
+  "risky-buisness": {
+    "canonicalName": "Risky Buisness",
+    "sourceNames": [
+      "Risky Buisness"
+    ]
+  },
+  "ultraviolet": {
+    "canonicalName": "Ultraviolet",
+    "sourceNames": [
+      "Ultraviolet"
+    ]
+  },
+  "vanz-acoustic-duo-david-andrea": {
+    "canonicalName": "Vanz Acoustic Duo (david & Andrea)",
+    "sourceNames": [
+      "Vanz Acoustic Duo (david & Andrea)"
+    ]
+  },
+  "wolves-in-alcatraz-anti-meta-the-two-step-goodbyes-project-morf": {
+    "canonicalName": "Wolves In Alcatraz + Anti-Meta + The Two Step Goodbyes + Project Morf",
+    "sourceNames": [
+      "Wolves In Alcatraz + Anti-Meta + The Two Step Goodbyes + Project Morf"
+    ]
+  },
+  "3-minute-warning": {
+    "canonicalName": "3 Minute Warning",
+    "sourceNames": [
+      "3 Minute Warning"
+    ]
+  },
+  "alibi": {
+    "canonicalName": "Alibi",
+    "sourceNames": [
+      "Alibi"
+    ]
+  },
+  "andrea-harvey-solo-70s-disco-inferno-disco-funk-classix": {
+    "canonicalName": "Andrea Harvey Solo 70s Disco Inferno Disco Funk Classix",
+    "sourceNames": [
+      "Andrea Harvey Solo 70s Disco Inferno Disco Funk Classix"
+    ]
+  },
+  "dennie": {
+    "canonicalName": "Dennie",
+    "sourceNames": [
+      "Dennie"
+    ]
+  },
+  "gemma-rae": {
+    "canonicalName": "Gemma Rae",
+    "sourceNames": [
+      "Gemma Rae"
+    ]
+  },
+  "nathan-and-simon": {
+    "canonicalName": "Nathan And Simon",
+    "sourceNames": [
+      "Nathan And Simon"
+    ]
+  },
+  "seventh-son-cozyzone": {
+    "canonicalName": "Seventh Son (cozyzone)",
+    "sourceNames": [
+      "Seventh Son (cozyzone)"
+    ]
+  },
+  "strings-n-things-duo": {
+    "canonicalName": "Strings N Things Duo",
+    "sourceNames": [
+      "Strings N Things Duo"
+    ]
+  },
+  "venture-x": {
+    "canonicalName": "Venture X",
+    "sourceNames": [
+      "Venture X"
+    ]
+  },
+  "the-tree-katz": {
+    "canonicalName": "The Tree-Katz",
+    "sourceNames": [
+      "The Tree-Katz"
+    ]
+  },
+  "isnt-it-alanis": {
+    "canonicalName": "Isn't It Alanis",
+    "sourceNames": [
+      "Isn't It Alanis"
+    ]
+  },
+  "josh": {
+    "canonicalName": "Josh",
+    "sourceNames": [
+      "Josh"
+    ]
+  },
+  "gone-country": {
+    "canonicalName": "Gone Country",
+    "sourceNames": [
+      "Gone Country"
+    ]
+  },
+  "off-the-rails": {
+    "canonicalName": "Off The Rails",
+    "sourceNames": [
+      "Off The Rails"
+    ]
+  },
+  "rachel-shenton-clubland": {
+    "canonicalName": "Rachel Shenton Clubland",
+    "sourceNames": [
+      "Rachel Shenton Clubland"
+    ]
+  },
+  "the-peaks": {
+    "canonicalName": "The Peaks",
+    "sourceNames": [
+      "The Peaks"
+    ]
+  },
+  "rocket-science": {
+    "canonicalName": "Rocket Science",
+    "sourceNames": [
+      "Rocket Science"
+    ]
+  },
+  "made-in-the-80s": {
+    "canonicalName": "Made in the 80s",
+    "sourceNames": [
+      "Made in the 80s"
+    ]
+  },
+  "under-the-influence": {
+    "canonicalName": "Under The Influence",
+    "sourceNames": [
+      "Under The Influence"
+    ]
+  },
+  "the-pluckers": {
+    "canonicalName": "The Pluckers",
+    "sourceNames": [
+      "The Pluckers"
+    ]
+  },
+  "the-tall-faces": {
+    "canonicalName": "The Tall Faces",
+    "sourceNames": [
+      "The Tall Faces"
+    ]
+  },
+  "c-c-duo": {
+    "canonicalName": "C&c Duo",
+    "sourceNames": [
+      "C&c Duo"
+    ]
+  },
+  "joy-diversion-joy-division-tribute": {
+    "canonicalName": "Joy Diversion (joy Division Tribute)",
+    "sourceNames": [
+      "Joy Diversion (joy Division Tribute)"
+    ]
+  },
+  "the-others": {
+    "canonicalName": "The Others",
+    "sourceNames": [
+      "The Others"
+    ]
+  },
+  "blindsided": {
+    "canonicalName": "Blindsided",
+    "sourceNames": [
+      "Blindsided"
+    ]
+  },
+  "the-skive": {
+    "canonicalName": "The Skive",
+    "sourceNames": [
+      "The Skive"
+    ]
+  },
+  "double-lively": {
+    "canonicalName": "Double Lively",
+    "sourceNames": [
+      "Double Lively"
+    ]
+  },
+  "the-pluckers-acoustic-duo": {
+    "canonicalName": "The Pluckers Acoustic Duo",
+    "sourceNames": [
+      "The Pluckers Acoustic Duo"
+    ]
+  },
+  "ian-derbyshire": {
+    "canonicalName": "Ian Derbyshire",
+    "sourceNames": [
+      "Ian Derbyshire"
+    ]
+  },
+  "poke-the-jokers": {
+    "canonicalName": "Poke The Jokers",
+    "sourceNames": [
+      "Poke The Jokers"
+    ]
+  },
+  "second-city": {
+    "canonicalName": "Second City",
+    "sourceNames": [
+      "Second City"
+    ]
+  },
+  "faith-healer-cozyzone": {
+    "canonicalName": "Faith Healer (cozyzone)",
+    "sourceNames": [
+      "Faith Healer (cozyzone)"
+    ]
+  },
+  "front-page-news": {
+    "canonicalName": "Front Page News",
+    "sourceNames": [
+      "Front Page News"
+    ]
+  },
+  "not-guilty": {
+    "canonicalName": "Not Guilty",
+    "sourceNames": [
+      "Not Guilty"
+    ]
+  },
+  "lee-grindey-elvis": {
+    "canonicalName": "Lee Grindey Elvis",
+    "sourceNames": [
+      "Lee Grindey Elvis"
+    ]
+  },
+  "rewired": {
+    "canonicalName": "Rewired",
+    "sourceNames": [
+      "Rewired"
+    ]
+  },
+  "crissy-rock-benidorm-trixie-lee": {
+    "canonicalName": "Crissy Rock (benidorm) & Trixie Lee",
+    "sourceNames": [
+      "Crissy Rock (benidorm) & Trixie Lee"
+    ]
+  },
+  "mutton-dressed-as-glam": {
+    "canonicalName": "Mutton Dressed As Glam",
+    "sourceNames": [
+      "Mutton Dressed As Glam"
+    ]
+  },
+  "paul-gibson": {
+    "canonicalName": "Paul Gibson",
+    "sourceNames": [
+      "Paul Gibson"
+    ]
+  },
+  "razed-on-radio": {
+    "canonicalName": "Razed On Radio",
+    "sourceNames": [
+      "Razed On Radio"
+    ]
+  },
+  "blond-age": {
+    "canonicalName": "Blond-age",
+    "sourceNames": [
+      "Blond-age"
+    ]
+  },
+  "trafford-park": {
+    "canonicalName": "Trafford Park",
+    "sourceNames": [
+      "Trafford Park"
+    ]
+  },
+  "rob-black": {
+    "canonicalName": "Rob Black",
+    "sourceNames": [
+      "Rob Black"
+    ]
+  },
+  "losing-light-cozyzone": {
+    "canonicalName": "Losing Light (cozyzone)",
+    "sourceNames": [
+      "Losing Light (cozyzone)"
+    ]
+  },
+  "the-pluckers-duo": {
+    "canonicalName": "The Pluckers Duo",
+    "sourceNames": [
+      "The Pluckers Duo"
+    ]
+  },
+  "hard-drive": {
+    "canonicalName": "Hard Drive",
+    "sourceNames": [
+      "Hard Drive"
+    ]
+  },
+  "limehouse-lizzy": {
+    "canonicalName": "Limehouse Lizzy",
+    "sourceNames": [
+      "Limehouse Lizzy"
+    ]
+  },
+  "one-woman-rock-show-rachel-shenton": {
+    "canonicalName": "One Woman Rock Show Rachel Shenton",
+    "sourceNames": [
+      "One Woman Rock Show Rachel Shenton"
+    ]
+  },
+  "the-daze": {
+    "canonicalName": "The Daze",
+    "sourceNames": [
+      "The Daze"
+    ]
+  },
+  "john-angus-band-cozyzone": {
+    "canonicalName": "John Angus Band (cozyzone)",
+    "sourceNames": [
+      "John Angus Band (cozyzone)"
+    ]
+  },
+  "meat-loaf-vs-elton-john": {
+    "canonicalName": "Meat Loaf Vs Elton John",
+    "sourceNames": [
+      "Meat Loaf Vs Elton John"
+    ]
+  },
+  "sonic": {
+    "canonicalName": "Sonic",
+    "sourceNames": [
+      "Sonic"
+    ]
+  },
+  "transmission-the-sound-of-joy-division": {
+    "canonicalName": "TRANSMISSION The Sound Of JOY DIVISION",
+    "sourceNames": [
+      "TRANSMISSION The Sound Of JOY DIVISION"
+    ]
+  },
+  "lynus-cozyzone": {
+    "canonicalName": "Lynus (cozyzone)",
+    "sourceNames": [
+      "Lynus (cozyzone)"
+    ]
+  },
+  "tourniquet-halloween-party": {
+    "canonicalName": "Tourniquet Halloween Party",
+    "sourceNames": [
+      "Tourniquet Halloween Party"
+    ]
+  },
+  "love-generation-reggae-and-soul-experience": {
+    "canonicalName": "Love Generation Reggae And Soul Experience",
+    "sourceNames": [
+      "Love Generation Reggae And Soul Experience",
+      "Love Generation Reggae and Soul Experience"
+    ]
+  },
+  "the-beat-featuring-ranking-jnr": {
+    "canonicalName": "The Beat featuring Ranking Jnr",
+    "sourceNames": [
+      "The Beat featuring Ranking Jnr"
+    ]
+  },
+  "ultimate40-reggae": {
+    "canonicalName": "Ultimate40 Reggae",
+    "sourceNames": [
+      "Ultimate40 Reggae"
+    ]
+  },
+  "our-trace-and-cliff-thomas": {
+    "canonicalName": "Our Trace And Cliff Thomas",
+    "sourceNames": [
+      "Our Trace And Cliff Thomas"
+    ]
+  },
+  "axidental-doggers-cozyzone": {
+    "canonicalName": "Axidental Doggers (cozyzone)",
+    "sourceNames": [
+      "Axidental Doggers (cozyzone)"
+    ]
+  },
+  "marauder-cozyzone": {
+    "canonicalName": "Marauder (cozyzone)",
+    "sourceNames": [
+      "Marauder (cozyzone)"
+    ]
+  }
+}

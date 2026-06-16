@@ -1,0 +1,1328 @@
+{
+  "the-cock-inn-leek": {
+    "canonicalName": "The Cock Inn Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Cock Inn Leek",
+      "The Cock Inn, Leek"
+    ]
+  },
+  "the-express-crewe": {
+    "canonicalName": "The Express, Crewe",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Express, Crewe"
+    ]
+  },
+  "the-britannia-inn": {
+    "canonicalName": "The Britannia Inn",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Britannia Inn"
+    ]
+  },
+  "the-shamrock-macclesfield": {
+    "canonicalName": "The Shamrock, Macclesfield",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Shamrock, Macclesfield"
+    ]
+  },
+  "red-lion-market-st-leek": {
+    "canonicalName": "Red Lion Market St Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Red Lion Market St Leek."
+    ]
+  },
+  "the-cosey-haslington": {
+    "canonicalName": "The Cosey, Haslington",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Cosey Club Haslington Cw1 5st",
+      "The Cosey Club Near Crewe",
+      "The Cosey Haslington",
+      "The Cosey, Haslington"
+    ]
+  },
+  "the-bush-at-brown-edge": {
+    "canonicalName": "The Bush At Brown Edge",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Bush At Brown Edge"
+    ]
+  },
+  "sixtowns-wedgwood": {
+    "canonicalName": "Sixtowns, Wedgwood",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Sixtowns, Wedgwood"
+    ]
+  },
+  "the-wilkes-head-leek": {
+    "canonicalName": "The Wilkes Head Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Wilkes Head Leek",
+      "The Wilkes Head, Leek"
+    ]
+  },
+  "the-nags-head-macclesfield": {
+    "canonicalName": "The Nags Head, Macclesfield",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Nag's Head Macclesfield",
+      "The Nag's Head in Macclesfield",
+      "The Nags Head Macclesfield",
+      "The Nags Head in Macclesfield"
+    ]
+  },
+  "lymelight-boulevard": {
+    "canonicalName": "Lymelight Boulevard",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Lymelight Boulevard."
+    ]
+  },
+  "norton-central-social-club": {
+    "canonicalName": "Norton Central Social Club",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Norton Central Social Club"
+    ]
+  },
+  "the-old-red-lion-froghall-road-ipstones-stoke": {
+    "canonicalName": "The Old Red Lion, Froghall Road, Ipstones, Stoke",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Old Red Lion, Froghall Road, Ipstones, Stoke St11 9eq"
+    ]
+  },
+  "weston-coyney-private-social-club": {
+    "canonicalName": "Weston Coyney Private Social Club",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Weston Coyney Private Social Club."
+    ]
+  },
+  "the-bridge-inn-stone": {
+    "canonicalName": "The Bridge Inn Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Bridge Inn Stone",
+      "The Bridge Inn, Stone"
+    ]
+  },
+  "the-black-lion-in-trent-vale": {
+    "canonicalName": "The Black Lion In Trent Vale",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Black Lion In Trent Vale"
+    ]
+  },
+  "waggon-horses": {
+    "canonicalName": "Waggon & Horses",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Waggon & Horses"
+    ]
+  },
+  "the-black-cock-inn": {
+    "canonicalName": "The Black Cock Inn",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Black Cock Inn"
+    ]
+  },
+  "holditch-club": {
+    "canonicalName": "Holditch Club",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Holditch Club"
+    ]
+  },
+  "the-park-inn": {
+    "canonicalName": "The Park Inn",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Park Inn."
+    ]
+  },
+  "congress-longton": {
+    "canonicalName": "Congress Longton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Congress Longton"
+    ]
+  },
+  "the-swan-stone": {
+    "canonicalName": "The Swan Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Swan Stone",
+      "The Swan, Stone"
+    ]
+  },
+  "blurton-club": {
+    "canonicalName": "Blurton Club",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Blurton Club"
+    ]
+  },
+  "granvilles-stone": {
+    "canonicalName": "Granvilles Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Granvilles - Stone",
+      "Granvilles Stone",
+      "Granvilles-Stone"
+    ]
+  },
+  "the-queens-hotel-macclesfield": {
+    "canonicalName": "The Queens Hotel, Macclesfield",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Queens Hotel Macclesfield",
+      "The Queens Hotel, Macclesfield"
+    ]
+  },
+  "the-black-horse-endon": {
+    "canonicalName": "The Black Horse Endon",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Black Horse Endon"
+    ]
+  },
+  "the-old-bulldog": {
+    "canonicalName": "The Old Bulldog",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Old Bulldog"
+    ]
+  },
+  "the-john-marstons": {
+    "canonicalName": "The John Marstons",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The John Marstons"
+    ]
+  },
+  "the-green-star-smallthorne": {
+    "canonicalName": "The Green Star, Smallthorne",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Green Star, Smallthorne"
+    ]
+  },
+  "den-engel-leek": {
+    "canonicalName": "Den Engel Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Den Engel Leek"
+    ]
+  },
+  "the-roebuck-forsbrook": {
+    "canonicalName": "The Roebuck, Forsbrook",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Roebuck - Forsbrook",
+      "The Roebuck, Forsbrook"
+    ]
+  },
+  "the-rose-crown-stanley": {
+    "canonicalName": "The Rose & Crown Stanley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Rose & Crown Stanley"
+    ]
+  },
+  "grumpy-bastards-motorcycles": {
+    "canonicalName": "Grumpy Bastards Motorcycles",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Grumpy Bastards Motorcycles"
+    ]
+  },
+  "the-cuckoo-newstead": {
+    "canonicalName": "The Cuckoo Newstead",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Cuckoo Newstead"
+    ]
+  },
+  "the-bankers-draught-leek": {
+    "canonicalName": "The Banker's Draught Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Banker's Draught Leek"
+    ]
+  },
+  "the-marquis-of-granby-in-penkhull": {
+    "canonicalName": "The Marquis Of Granby In Penkhull",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Marquis Of Granby In Penkhull"
+    ]
+  },
+  "ye-olde-crown": {
+    "canonicalName": "Ye olde crown",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Ye Olde Crown",
+      "Ye olde crown"
+    ]
+  },
+  "the-fountain-inn-leek": {
+    "canonicalName": "The Fountain Inn Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Fountain Inn Leek"
+    ]
+  },
+  "crown-and-thistle-kidsgrove": {
+    "canonicalName": "Crown And Thistle Kidsgrove",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Crown And Thistle Kidsgrove"
+    ]
+  },
+  "the-albert": {
+    "canonicalName": "The Albert",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Albert"
+    ]
+  },
+  "the-cock-woodseaves": {
+    "canonicalName": "The Cock Woodseaves",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Cock Woodseaves"
+    ]
+  },
+  "the-glebe-stoke": {
+    "canonicalName": "The Glebe Stoke",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Glebe Stoke",
+      "The Glebe, Stoke"
+    ]
+  },
+  "market-quarter-congleton": {
+    "canonicalName": "Market Quarter, Congleton",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Market Quarter, Congleton"
+    ]
+  },
+  "the-underground-hanley": {
+    "canonicalName": "The Underground - Hanley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Underground - Hanley"
+    ]
+  },
+  "chell-social-club": {
+    "canonicalName": "Chell Social Club",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Chell Social Club"
+    ]
+  },
+  "pickled-pig-stafford": {
+    "canonicalName": "Pickled Pig, Stafford",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Pickled Pig, Stafford"
+    ]
+  },
+  "the-old-star": {
+    "canonicalName": "The Old Star",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Old Star"
+    ]
+  },
+  "swiftys-meir": {
+    "canonicalName": "Swiftys, Meir",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Swifty's, Meir",
+      "Swiftys, Meir",
+      "Swiftys,meir",
+      "Swiftys. Meir"
+    ]
+  },
+  "benks-leek": {
+    "canonicalName": "Benks Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Benks Leek"
+    ]
+  },
+  "bod-stone": {
+    "canonicalName": "Bod, Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Bod, Stone"
+    ]
+  },
+  "the-quarter-potbank": {
+    "canonicalName": "The Quarter @ Potbank",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Quarter @ Potbank"
+    ]
+  },
+  "the-shed-maybank": {
+    "canonicalName": "The Shed, Maybank",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Shed, Maybank"
+    ]
+  },
+  "the-bridge-inn-in-stone": {
+    "canonicalName": "The Bridge Inn In Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Bridge Inn In Stone."
+    ]
+  },
+  "the-cock-inn-leek-8-30pm": {
+    "canonicalName": "The Cock Inn Leek, 8.30pm",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Cock Inn Leek, 8.30pm"
+    ]
+  },
+  "the-old-post-office-burslem": {
+    "canonicalName": "The Old Post Office Burslem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Old Post Office Burslem",
+      "The Old Post Office, Burslem"
+    ]
+  },
+  "the-britannia-inn-leek": {
+    "canonicalName": "The Britannia Inn Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Britannia Inn Leek"
+    ]
+  },
+  "woodman-hanley": {
+    "canonicalName": "Woodman Hanley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Woodman Hanley",
+      "Woodman, Hanley"
+    ]
+  },
+  "shoulder-fulford": {
+    "canonicalName": "Shoulder, Fulford",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Shoulder, Fulford"
+    ]
+  },
+  "the-victoria-little-vic": {
+    "canonicalName": "The Victoria, Little Vic",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Victoria, Little Vic"
+    ]
+  },
+  "greyhound-penkhull": {
+    "canonicalName": "Greyhound, Penkhull",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Greyhound, Penkhull"
+    ]
+  },
+  "pau-caf-trentham": {
+    "canonicalName": "Pau Café, Trentham",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Pau Café, Trentham"
+    ]
+  },
+  "hartington-hall-yha": {
+    "canonicalName": "Hartington Hall Yha",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Hartington Hall Yha"
+    ]
+  },
+  "the-valiant-leek": {
+    "canonicalName": "The Valiant Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Valiant Leek"
+    ]
+  },
+  "beyond-the-pale-leek": {
+    "canonicalName": "Beyond The Pale, Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Beyond The Pale, Leek"
+    ]
+  },
+  "the-hollybush-denford-7-30pm": {
+    "canonicalName": "The Hollybush Denford, 7.30pm",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Hollybush Denford, 7.30pm"
+    ]
+  },
+  "the-hollybush-denford": {
+    "canonicalName": "The Hollybush, Denford",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Hollybush Denford",
+      "The Hollybush, Denford"
+    ]
+  },
+  "the-ashcombury-music-festival": {
+    "canonicalName": "The Ashcombury Music Festival",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Ashcombury Music Festival"
+    ]
+  },
+  "the-seabridge-pub-clayton": {
+    "canonicalName": "The Seabridge Pub, Clayton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Seabridge Pub, Clayton"
+    ]
+  },
+  "new-old-sal-longton": {
+    "canonicalName": "New Old Sal, Longton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "New Old Sal, Longton"
+    ]
+  },
+  "shed-maybank": {
+    "canonicalName": "Shed, Maybank",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Shed, Maybank"
+    ]
+  },
+  "green-star-smallthorne": {
+    "canonicalName": "Green Star, Smallthorne",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Green Star Smallthorne",
+      "Green Star, Smallthorne"
+    ]
+  },
+  "the-underground": {
+    "canonicalName": "The Underground",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Underground"
+    ]
+  },
+  "black-lion-trent-vale": {
+    "canonicalName": "Black Lion Trent Vale",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Black Lion Trent Vale"
+    ]
+  },
+  "oulton-village-hall": {
+    "canonicalName": "Oulton Village Hall",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Oulton Village Hall"
+    ]
+  },
+  "the-ash-inn-mow-cop": {
+    "canonicalName": "The Ash Inn Mow Cop",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Ash Inn Mow Cop"
+    ]
+  },
+  "the-riff-factory-fenton": {
+    "canonicalName": "The Riff Factory - Fenton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Riff Factory - Fenton"
+    ]
+  },
+  "the-fountain-inn-leek-5pm": {
+    "canonicalName": "The Fountain Inn Leek, 5pm",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Fountain Inn Leek, 5pm"
+    ]
+  },
+  "the-raven-crewe": {
+    "canonicalName": "The Raven, Crewe",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Raven, Crewe"
+    ]
+  },
+  "the-albert-newcastle": {
+    "canonicalName": "The Albert Newcastle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Albert Newcastle"
+    ]
+  },
+  "star-inn-great-wyrley": {
+    "canonicalName": "Star Inn, Great Wyrley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Star Inn, Great Wyrley"
+    ]
+  },
+  "the-bakers-arms-cheadle-st10": {
+    "canonicalName": "The Bakers Arms - Cheadle St10",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Bakers Arms - Cheadle St10"
+    ]
+  },
+  "cock-inn-leek": {
+    "canonicalName": "Cock Inn, Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Cock Inn, Leek"
+    ]
+  },
+  "the-sugarmill-hanley": {
+    "canonicalName": "The Sugarmill, Hanley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Sugarmill, Hanley"
+    ]
+  },
+  "the-cheshire-cheese-hanley": {
+    "canonicalName": "The Cheshire Cheese, Hanley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Cheshire Cheese, Hanley"
+    ]
+  },
+  "the-linley-tavern": {
+    "canonicalName": "The Linley Tavern",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Linley Tavern"
+    ]
+  },
+  "wellington-stoke": {
+    "canonicalName": "Wellington, Stoke",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Wellington, Stoke"
+    ]
+  },
+  "charlie-bassetts-dilhorne": {
+    "canonicalName": "Charlie Bassetts - Dilhorne",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Charlie Bassetts - Dilhorne",
+      "Charlie Bassetts, Dilhorne"
+    ]
+  },
+  "puss-in-boots-macclesfield": {
+    "canonicalName": "Puss In Boots, Macclesfield",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Puss In Boots, Macclesfield"
+    ]
+  },
+  "tudor-nook-cheadle": {
+    "canonicalName": "Tudor Nook, Cheadle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Tudor Nook, Cheadle"
+    ]
+  },
+  "the-three-stirrups-brewood": {
+    "canonicalName": "The Three Stirrups, Brewood",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Three Stirrups, Brewood"
+    ]
+  },
+  "lord-combermere-audlem": {
+    "canonicalName": "Lord Combermere, Audlem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Lord Combermere, Audlem"
+    ]
+  },
+  "the-wellington-inn": {
+    "canonicalName": "The Wellington Inn",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Wellington Inn"
+    ]
+  },
+  "the-royal-oak-biddulph": {
+    "canonicalName": "The Royal Oak, Biddulph",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Royal Oak, Biddulph"
+    ]
+  },
+  "princess-royal-dresden": {
+    "canonicalName": "Princess Royal, Dresden",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Princess Royal, Dresden"
+    ]
+  },
+  "the-congress-longton": {
+    "canonicalName": "The Congress, Longton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Congress, Longton"
+    ]
+  },
+  "mere-inn-alsager": {
+    "canonicalName": "Mere Inn, Alsager",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Mere Inn, Alsager"
+    ]
+  },
+  "auctioneers-arms-1a-the-green-caverswall": {
+    "canonicalName": "Auctioneers Arms, 1a The Green, Caverswall",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Auctioneers Arms, 1a The Green, Caverswall ST11 9EQ"
+    ]
+  },
+  "coolock-irish-bar-shrewsbury": {
+    "canonicalName": "Coolock Irish Bar, Shrewsbury",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Coolock Irish Bar Shrewsbury",
+      "Coolock Irish Bar, Shrewsbury"
+    ]
+  },
+  "robert-peel-dresden": {
+    "canonicalName": "Robert Peel Dresden",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Robert Peel Dresden"
+    ]
+  },
+  "diversion-macclesfield": {
+    "canonicalName": "Diversion, Macclesfield",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Diversion, Macclesfield"
+    ]
+  },
+  "the-old-star-uttoxeter": {
+    "canonicalName": "The Old Star, Uttoxeter",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Old Star Uttoxeter",
+      "The Old Star, Uttoxeter"
+    ]
+  },
+  "the-carlton": {
+    "canonicalName": "The Carlton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Carlton"
+    ]
+  },
+  "the-riff-factory": {
+    "canonicalName": "The Riff Factory",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Riff Factory"
+    ]
+  },
+  "moorland-inn-burslem": {
+    "canonicalName": "Moorland Inn, Burslem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Moorland Inn, Burslem",
+      "Moorland Inn, burslem",
+      "Moorland inn, burslem"
+    ]
+  },
+  "gardeners-rest-brindley-ford": {
+    "canonicalName": "Gardener's Rest, Brindley Ford",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Gardener's Rest, Brindley Ford"
+    ]
+  },
+  "boughey-arms-audley": {
+    "canonicalName": "Boughey Arms, Audley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Boughey Arms, Audley"
+    ]
+  },
+  "ye-olde-crown-burslem": {
+    "canonicalName": "Ye Olde Crown, Burslem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Ye Olde Crown, Burslem"
+    ]
+  },
+  "the-black-swan-leek": {
+    "canonicalName": "The Black Swan, Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Black Swan, Leek"
+    ]
+  },
+  "the-furlong": {
+    "canonicalName": "The Furlong",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Furlong"
+    ]
+  },
+  "pau-trentham": {
+    "canonicalName": "Pau, Trentham",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Pau, Trentham"
+    ]
+  },
+  "post-office-burslem": {
+    "canonicalName": "Post Office, Burslem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Post Office, Burslem"
+    ]
+  },
+  "old-post-office-burslem": {
+    "canonicalName": "Old Post Office, Burslem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Old Post Office, Burslem"
+    ]
+  },
+  "the-waggon-horses-newcastle": {
+    "canonicalName": "The Waggon & Horses, Newcastle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Waggon & Horses, Newcastle"
+    ]
+  },
+  "brittannia-inn-leek": {
+    "canonicalName": "Brittannia inn Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Brittannia inn Leek"
+    ]
+  },
+  "crewe-market-hall": {
+    "canonicalName": "Crewe Market Hall",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Crewe Market Hall, Crewe",
+      "Market Hall, Crewe"
+    ]
+  },
+  "sound-of-coffee-longton": {
+    "canonicalName": "Sound Of Coffee, Longton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Sound Of Coffee, Longton"
+    ]
+  },
+  "butchers-arms-forsbrook": {
+    "canonicalName": "Butchers Arms, Forsbrook",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Butchers Arms, Forsbrook"
+    ]
+  },
+  "the-red-lion-leek": {
+    "canonicalName": "The Red Lion, Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Red Lion, Leek"
+    ]
+  },
+  "hollybush-salt": {
+    "canonicalName": "Hollybush, Salt",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Hollybush, Salt"
+    ]
+  },
+  "the-honeysuckle-newport": {
+    "canonicalName": "The Honeysuckle, Newport",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Honeysuckle, Newport"
+    ]
+  },
+  "old-star-uttoxeter": {
+    "canonicalName": "Old Star Uttoxeter",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Old Star Uttoxeter"
+    ]
+  },
+  "ye-old-queens-head-talke": {
+    "canonicalName": "Ye Old Queens Head, Talke",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Ye Old Queens Head, Talke"
+    ]
+  },
+  "the-prince-of-wales-congleton": {
+    "canonicalName": "The Prince Of Wales, Congleton",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Prince Of Wales, Congleton"
+    ]
+  },
+  "swiftys": {
+    "canonicalName": "Swiftys",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Swiftys"
+    ]
+  },
+  "cheshire-county-showground": {
+    "canonicalName": "Cheshire County Showground",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Cheshire County Showground"
+    ]
+  },
+  "horse-shoe-high-lane": {
+    "canonicalName": "Horse Shoe, High Lane",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Horse Shoe, High Lane"
+    ]
+  },
+  "the-black-cock-blythe-bridge": {
+    "canonicalName": "The Black Cock, Blythe Bridge",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Black Cock, Blythe Bridge"
+    ]
+  },
+  "sanctuary-hartshill": {
+    "canonicalName": "Sanctuary, Hartshill",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Sanctuary, Hartshill"
+    ]
+  },
+  "the-bleeding-wolf-scholar-green": {
+    "canonicalName": "The Bleeding Wolf, Scholar Green",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Bleeding Wolf, Scholar Green"
+    ]
+  },
+  "congleton-rugby-club-congleton": {
+    "canonicalName": "Congleton Rugby Club, Congleton",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Congleton Rugby Club, Congleton"
+    ]
+  },
+  "potters-bar-meir-park": {
+    "canonicalName": "Potters Bar, Meir Park",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Potter's Bar, Meir Park",
+      "Potters Bar, Meir Park"
+    ]
+  },
+  "the-lamb-stone": {
+    "canonicalName": "The Lamb, Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Lamb, Stone"
+    ]
+  },
+  "the-new-florence-dresden": {
+    "canonicalName": "The New Florence, Dresden",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The New Florence, Dresden"
+    ]
+  },
+  "the-archer-wolstanton": {
+    "canonicalName": "The Archer, Wolstanton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Archer, Wolstanton"
+    ]
+  },
+  "hog-noggins-burslem": {
+    "canonicalName": "Hog Noggins, Burslem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Hog Noggins, Burslem"
+    ]
+  },
+  "glebe": {
+    "canonicalName": "Glebe",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Glebe"
+    ]
+  },
+  "the-green-man-milwich": {
+    "canonicalName": "The Green Man, Milwich",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Green Man, Milwich"
+    ]
+  },
+  "the-crown-wharf-stone": {
+    "canonicalName": "The Crown Wharf, Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Crown Wharf, Stone"
+    ]
+  },
+  "the-roebuck-leek": {
+    "canonicalName": "The Roebuck, Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Roebuck, Leek"
+    ]
+  },
+  "the-princess-royal-dresden": {
+    "canonicalName": "The Princess Royal, Dresden",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Princess Royal, Dresden"
+    ]
+  },
+  "old-bulldog-longton": {
+    "canonicalName": "Old Bulldog, Longton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Old Bulldog, Longton"
+    ]
+  },
+  "royal-oak-harriseahead": {
+    "canonicalName": "Royal Oak, Harriseahead",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Royal Oak, Harriseahead"
+    ]
+  },
+  "thistleberry-newcastle": {
+    "canonicalName": "Thistleberry, Newcastle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Thistleberry, Newcastle"
+    ]
+  },
+  "black-cock-blythe-bridge": {
+    "canonicalName": "Black Cock Blythe Bridge",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Black Cock Blythe Bridge"
+    ]
+  },
+  "hales-hall-cheadle": {
+    "canonicalName": "Hales Hall, Cheadle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Hales Hall, Cheadle"
+    ]
+  },
+  "the-sugarmill": {
+    "canonicalName": "The Sugarmill",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Sugarmill"
+    ]
+  },
+  "norton-central-social-club-norton": {
+    "canonicalName": "Norton Central Social Club, Norton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Norton Central Social Club, Norton"
+    ]
+  },
+  "the-albert-brindley-street-newcastle": {
+    "canonicalName": "The Albert, Brindley Street, Newcastle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Albert, Brindley Street, Newcastle"
+    ]
+  },
+  "brigtown-social-club-cannock": {
+    "canonicalName": "Brigtown Social Club Cannock",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Brigtown Social Club Cannock"
+    ]
+  },
+  "the-globe-tunstall": {
+    "canonicalName": "The Globe, Tunstall",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Globe, Tunstall"
+    ]
+  },
+  "the-red-lion-market-place-leek": {
+    "canonicalName": "The Red Lion, Market Place, Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Red Lion, Market Place, Leek"
+    ]
+  },
+  "bench-bar-fenton": {
+    "canonicalName": "Bench & Bar, Fenton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Bench & Bar, Fenton"
+    ]
+  },
+  "beartown-tap-congleton": {
+    "canonicalName": "Beartown Tap, Congleton",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Beartown Tap, Congleton"
+    ]
+  },
+  "the-cuckoo-blurton-stoke-on-trent": {
+    "canonicalName": "The Cuckoo, Blurton, Stoke-on-Trent",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Cuckoo, Blurton, Stoke-on-Trent"
+    ]
+  },
+  "holditch-social-club-chesterton": {
+    "canonicalName": "Holditch Social Club, Chesterton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Holditch Social Club, Chesterton"
+    ]
+  },
+  "the-john-marston": {
+    "canonicalName": "The John Marston",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The John Marston"
+    ]
+  },
+  "new-florence-lightwood": {
+    "canonicalName": "New Florence, Lightwood",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "New Florence, Lightwood"
+    ]
+  },
+  "baddeley-green-wmc-baddeley-green": {
+    "canonicalName": "Baddeley Green Wmc, Baddeley Green",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Baddeley Green Wmc, Baddeley Green"
+    ]
+  },
+  "roebuck-leek": {
+    "canonicalName": "Roebuck Leek",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Roebuck Leek"
+    ]
+  },
+  "seabridge-seabridge": {
+    "canonicalName": "Seabridge, Seabridge",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Seabridge, Seabridge"
+    ]
+  },
+  "wrens-nest-ketley": {
+    "canonicalName": "Wrens Nest, Ketley",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Wrens Nest, Ketley"
+    ]
+  },
+  "newcastle-wmc-king-st": {
+    "canonicalName": "Newcastle Wmc King St",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Newcastle Wmc King St"
+    ]
+  },
+  "the-swan-inn-stone": {
+    "canonicalName": "The Swan Inn, Stone",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Swan Inn, Stone"
+    ]
+  },
+  "riff-factory": {
+    "canonicalName": "Riff Factory",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Riff Factory"
+    ]
+  },
+  "the-auctioneers-arms-caverswall": {
+    "canonicalName": "The Auctioneer's Arms, Caverswall",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Auctioneer's Arms, Caverswall"
+    ]
+  },
+  "bradwell-wmc-bradwell": {
+    "canonicalName": "Bradwell Wmc, Bradwell",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Bradwell Wmc, Bradwell"
+    ]
+  },
+  "the-jolly-sailor-macclesfield": {
+    "canonicalName": "The Jolly Sailor, Macclesfield",
+    "region": "Cheshire",
+    "sourceNames": [
+      "The Jolly Sailor, Macclesfield"
+    ]
+  },
+  "half-moon-derby": {
+    "canonicalName": "Half Moon, Derby",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Half Moon, Derby"
+    ]
+  },
+  "the-furlong-tavern": {
+    "canonicalName": "The Furlong Tavern",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Furlong Tavern"
+    ]
+  },
+  "the-bush-brown-edge": {
+    "canonicalName": "The Bush, Brown Edge",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Bush, Brown Edge"
+    ]
+  },
+  "alsager-civic": {
+    "canonicalName": "Alsager Civic",
+    "region": "Cheshire",
+    "sourceNames": [
+      "Alsager Civic",
+      "Alsager Civic center."
+    ]
+  },
+  "the-green-star": {
+    "canonicalName": "The Green Star",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Green Star"
+    ]
+  },
+  "ye-olde-rose-crown": {
+    "canonicalName": "Ye Olde Rose & Crown",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Ye Olde Rose & Crown"
+    ]
+  },
+  "white-lodge-stafford": {
+    "canonicalName": "White Lodge, Stafford",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "White Lodge, Stafford"
+    ]
+  },
+  "the-potters-bar": {
+    "canonicalName": "The Potters Bar",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Potters Bar"
+    ]
+  },
+  "top-of-the-world-stafford": {
+    "canonicalName": "Top of The World Stafford",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Top of The World Stafford"
+    ]
+  },
+  "knutton-ex-servicemens-club": {
+    "canonicalName": "Knutton Ex Servicemens Club",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Knutton Ex Servicemens Club"
+    ]
+  },
+  "white-swan-burntwood": {
+    "canonicalName": "White Swan, Burntwood",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "White Swan, Burntwood"
+    ]
+  },
+  "marchamley-village-hall": {
+    "canonicalName": "Marchamley Village Hall",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Marchamley Village Hall"
+    ]
+  },
+  "the-moorland-inn-smallthorne": {
+    "canonicalName": "The Moorland Inn, Smallthorne",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Moorland Inn, Smallthorne"
+    ]
+  },
+  "waggon-horses-newcastle": {
+    "canonicalName": "Waggon & Horses, Newcastle",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Waggon & Horses, Newcastle"
+    ]
+  },
+  "catchems-corner-meir": {
+    "canonicalName": "Catchems Corner, Meir",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Catchems Corner, Meir"
+    ]
+  },
+  "the-seabridge-clayton": {
+    "canonicalName": "The Seabridge, Clayton",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "The Seabridge, Clayton"
+    ]
+  },
+  "coole-acres-audlem": {
+    "canonicalName": "Coole Acres, Audlem",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Coole Acres, Audlem"
+    ]
+  },
+  "bradley-house-uttoxeter": {
+    "canonicalName": "Bradley House Uttoxeter",
+    "region": "Staffordshire",
+    "sourceNames": [
+      "Bradley House Uttoxeter"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "raw_rows": 500,
+  "metadata_rows": 19,
+  "sentinel_1899_rows": 0,
+  "unparseable_date_rows": 1,
+  "valid_event_rows": 480,
+  "distinct_venues": 223,
+  "distinct_artists": 254,
+  "rows_no_parseable_time": 74,
+  "rows_date_leaked_into_time_col": 2,
+  "cheshire_venue_rows": 44,
+  "distinct_cheshire_venues": 25,
+  "specialist_venue_rows": 70,
+  "multiact_venue_rows": 24
+}

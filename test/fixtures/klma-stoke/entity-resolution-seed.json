@@ -1,0 +1,152 @@
+{
+  "_meta": {
+    "source": "klma-stoke-gig-list",
+    "captured": "2026-06-13 via bndy-events MCP (live dev data)",
+    "purpose": "Real resolution ground-truth for Epic 5 tests + source-state seed. Shows why the spec's raw auto-match thresholds are miscalibrated for this source."
+  },
+  "venues": [
+    {
+      "sourceVariants": [
+        "The Rigger",
+        "The Rigger Venue, Newcastle-Under-Lyme St5 1bt"
+      ],
+      "bndyId": "YOMsEVdj9Y7OMMy88HFV",
+      "bndyName": "The Rigger",
+      "nameSearchConfidence": 100,
+      "matchMethod": "high_confidence",
+      "existingKlmaExternalIds": [
+        "venue-the-rigger-venue-newcastle-under-lyme"
+      ],
+      "flag": "multi_act",
+      "lesson": "Clean match; KLMA external-id already stored from prior runs -> external-id ladder step hits first."
+    },
+    {
+      "sourceVariants": [
+        "Eleven Sandyford St6 5pd"
+      ],
+      "bndyId": "8Pky4flebxSt2s36ub3o",
+      "bndyName": "Eleven",
+      "nameSearchConfidence": 100,
+      "matchMethod": "high_confidence",
+      "existingKlmaExternalIds": [],
+      "flag": "specialist",
+      "lesson": "Exists but UNLINKED (no external id). Resolve should attach external id on match."
+    },
+    {
+      "sourceVariants": [
+        "Artisan Tap",
+        "Artisan Tap, Hartshill",
+        "The Artisan Tap"
+      ],
+      "bndyId": "CoS3G3Jr9djE4WSWQqkz",
+      "bndyName": "Artisan Tap",
+      "nameSearchConfidence": 100,
+      "matchMethod": "high_confidence",
+      "existingKlmaExternalIds": [],
+      "flag": "specialist"
+    },
+    {
+      "sourceVariants": [
+        "The Cosey, Haslington",
+        "The Cosey Haslington",
+        "The Cosey Club Near Crewe",
+        "Cosey Club Haslington Cw1 5st"
+      ],
+      "bndyId": "LHrDNnXeCU1eirDOxUKc",
+      "bndyName": "Cosey Club",
+      "nameSearchConfidence": 20,
+      "matchMethod": "low_confidence",
+      "existingKlmaExternalIds": [
+        "venue-the-cosey-club-near-crewe",
+        "venue-cosey-club-haslington"
+      ],
+      "region": "Cheshire",
+      "lesson": "CORRECT venue, but name search = 20%. Two KLMA external ids already exist for ONE venue (variant drift). 0.95 threshold would CREATE A DUPLICATE. Only external-id/state hit + canonicalisation save this."
+    },
+    {
+      "sourceVariants": [
+        "The Nags Head Macclesfield",
+        "The Nag's Head in Macclesfield",
+        "The Nags Head in Macclesfield"
+      ],
+      "bndyId": "3AtaBBDfT4xp3pTYiIUZ",
+      "bndyName": "Nags Head",
+      "nameSearchConfidence": 69,
+      "matchMethod": "low_confidence",
+      "existingKlmaExternalIds": [
+        "venue-the-nags-head-macclesfield",
+        "venue-the-nags-head-in-macclesfield"
+      ],
+      "region": "Cheshire",
+      "lesson": "Correct, 69% < 0.95. Again two KLMA external ids for one venue. Same pattern as Cosey."
+    },
+    {
+      "sourceVariants": [
+        "The Express, Crewe"
+      ],
+      "bndyId": "26b80c61-a573-4d17-9542-80d02d7d136b",
+      "bndyName": "The Express",
+      "nameSearchConfidence": 100,
+      "matchMethod": "high_confidence",
+      "existingKlmaExternalIds": [
+        "venue-the-express-crewe"
+      ],
+      "region": "Cheshire",
+      "lesson": "Clean. Note bndy uses MIXED id formats (UUID here vs Firestore-style elsewhere) - treat id as opaque string."
+    }
+  ],
+  "artists": [
+    {
+      "source": "Tom Robinson",
+      "region": "Staffordshire",
+      "result": "not_found_above_50",
+      "scanned": 1574,
+      "lesson": "Local act not in bndy -> CREATE. Region filter correctly avoided matching the famous national 'Tom Robinson'. Famous-name collisions are real; keep region as a guard for CREATE decisions but see Afterglow caveat."
+    },
+    {
+      "source": "Afterglow",
+      "bndyId": "u4fgfLIn3BQcPn5BBCwt",
+      "bndyName": "Afterglow",
+      "confidence": 100,
+      "location": "North West England",
+      "lesson": "100% match but artist location=NW England while KLMA defaultArtistLocation=Staffordshire. Tonight's gig is Crewe (NW). A HARD region=Staffordshire filter on artist resolve would MISS this and create a duplicate. KLMA spans Staffs+Cheshire/NW -> do not hard-filter artist matches to one region."
+    },
+    {
+      "source": "Circa81",
+      "bndyId": "lZ9xMciTyr8Fkz2G0Ovj",
+      "bndyName": "Circa 81",
+      "confidence": 88,
+      "lesson": "88% < 0.90 artistAutoMatch purely because of a SPACE ('Circa81' vs 'Circa 81'). Normalise (strip spaces/punct/case) BEFORE scoring or this becomes a duplicate."
+    },
+    {
+      "source": "Adam Forman",
+      "topRecommendation": {
+        "name": "Adam Morgan",
+        "confidence": 82,
+        "verdict": "FALSE POSITIVE"
+      },
+      "likelyCorrect": {
+        "name": "Adam George Forman",
+        "bndyId": "44ecf5a4-664c-4f75-8773-b47621d10146",
+        "confidence": 61,
+        "location": "Derbyshire"
+      },
+      "lesson": "The tool's own top 'recommendation' (Adam Morgan 82%) is WRONG. The real match (Adam George Forman, shares surname token) ranks lower at 61%. NEVER auto-accept top-1 by confidence; require shared significant token (surname) and route ambiguous to review."
+    }
+  ],
+  "thresholdFindings": {
+    "specVenueAutoMatch": 0.95,
+    "specArtistAutoMatch": 0.9,
+    "evidence": "Correct matches observed at name-confidence 100, 88, 69, 20. Top-1 recommendation can be a false positive (82%).",
+    "conclusion": "Do NOT gate auto-match on the spec's raw name-confidence thresholds. Order the ladder: (1) source-state hit, (2) bndy external-id hit, (3) canonicalise+normalise then exact/near-exact, (4) Google place_id where present, (5) token-aware match. Reserve CREATE for genuine no-hit. Send the mushy middle to review, not auto-create."
+  },
+  "recommendedResolverBehaviour": [
+    "Treat bndy entity id as an opaque string (mixed UUID/Firestore formats coexist).",
+    "External-id + state lookup must come before name scoring (it is what actually prevents dupes here).",
+    "Canonicalise venue string (strip postcode/town/whitespace, normalise apostrophe) so the generated external-id slug is STABLE run-to-run.",
+    "On match with no stored external-id, ATTACH the source external-id (idempotent) instead of creating.",
+    "Do not hard-filter artist resolution to a single region; KLMA spans Staffordshire + Cheshire/NW.",
+    "Never auto-accept the search's top recommendation by confidence alone; require token agreement.",
+    "Pre-existing duplicate external-ids (Cosey x2, Nags Head x2) mean prior runs already drifted - the resolve endpoint should ideally collapse multiple source ids onto one bndy id."
+  ]
+}

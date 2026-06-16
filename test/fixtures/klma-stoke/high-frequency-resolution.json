@@ -1,0 +1,151 @@
+{
+  "_meta": {
+    "captured": "2026-06-13 via bndy-events MCP (live dev)",
+    "scope": "top high-frequency KLMA venues+artists (complements the branch-coverage set in entity-resolution-seed.json)"
+  },
+  "venues": [
+    {
+      "source": "Swiftys, Meir / Swiftys. Meir",
+      "gigs": 26,
+      "bndyId": "aayxv4IGQbBmXBpk7WZL",
+      "bndyName": "Swiftys",
+      "nameConfidence": 100,
+      "klmaExternalIds": [
+        "venue-swiftys-meir"
+      ],
+      "otherExternalIds": [
+        "venue-swiftys-stoke (x2, poster-import)"
+      ],
+      "action": "MATCH_EXISTING",
+      "note": "already linked; also has duplicate poster-import ids"
+    },
+    {
+      "source": "The Swan, Stone / The Swan Stone",
+      "gigs": 7,
+      "bndyId": "74BjwiHSxHDxdUghRVB9",
+      "bndyName": "Swan Inn",
+      "nameConfidence": 13,
+      "klmaExternalIds": [
+        "venue-the-swan-inn-stone"
+      ],
+      "action": "MATCH_EXISTING",
+      "note": "NAME 13% — external-id is the ONLY thing that matches this; 0.95 threshold would create a duplicate"
+    },
+    {
+      "source": "Star Inn, Great Wyrley",
+      "gigs": 7,
+      "bndyId": "t0PUMMbL2hqXafWaY9mB",
+      "bndyName": "The Star Inn",
+      "nameConfidence": 67,
+      "klmaExternalIds": [
+        "venue-star-inn-great-wyrley"
+      ],
+      "region": "Walsall WS6 (NOT Stoke)",
+      "action": "MATCH_EXISTING",
+      "note": "out-of-default-region (Walsall border) — another reason not to default to Stoke"
+    },
+    {
+      "source": "The Roebuck, Forsbrook",
+      "gigs": 6,
+      "bndyId": "I7RcAfPu0g4DP7kXdlaL",
+      "bndyName": "Roebuck Inn",
+      "nameConfidence": 27,
+      "klmaExternalIds": [
+        "venue-the-roebuck-forsbrook"
+      ],
+      "otherExternalIds": [
+        "venue-roebuck-forsbrook (x2, poster-import)"
+      ],
+      "action": "MATCH_EXISTING",
+      "note": "name 27%; external-id only"
+    },
+    {
+      "source": "The Wilkes Head, Leek",
+      "gigs": 5,
+      "bndyId": "04e2d803-baf2-45ea-a75c-50f99216c8e9",
+      "bndyName": "Wilkes Head",
+      "nameConfidence": 73,
+      "klmaExternalIds": [
+        "venue-the-wilkes-head-leek"
+      ],
+      "action": "MATCH_EXISTING"
+    },
+    {
+      "source": "Moorland Inn, Burslem",
+      "gigs": 5,
+      "bndyId": "hbXt7haW5QcV06fHixD0",
+      "bndyName": "The Moorland Inn",
+      "nameConfidence": 75,
+      "klmaExternalIds": [
+        "venue-moorland-inn-smallthorne",
+        "venue-moorland-inn-burslem"
+      ],
+      "action": "MATCH_EXISTING",
+      "note": "TWO klma external-ids for one venue (Smallthorne vs Burslem) — variant drift"
+    }
+  ],
+  "artists": [
+    {
+      "source": "Danny Brab",
+      "gigs": 59,
+      "bndyId": "FIT600aoQ5lpNSejGctN",
+      "bndyName": "Danny Brab",
+      "confidence": 100,
+      "location": "UK",
+      "klmaExternalIds": [],
+      "action": "MATCH_EXISTING",
+      "note": "exists, NOT klma-linked -> match by name then ATTACH external-id"
+    },
+    {
+      "source": "Trilogy Rock Band",
+      "gigs": 19,
+      "bndyId": "XJ2gV4N1qIe6vK2R562Q",
+      "bndyName": "Trilogy Rock Band",
+      "confidence": 100,
+      "location": "North West UK",
+      "klmaExternalIds": [],
+      "action": "MATCH_EXISTING",
+      "note": "location NW — a hard Staffordshire artist filter would drop this"
+    },
+    {
+      "source": "Ant Clowes Duo",
+      "gigs": 14,
+      "bndyId": "X8nI6ptSlLGoHh8XW51N",
+      "bndyName": "Ant Clowes Duo",
+      "confidence": 100,
+      "location": "",
+      "klmaExternalIds": [],
+      "action": "MATCH_EXISTING"
+    },
+    {
+      "source": "Crosshair",
+      "gigs": 14,
+      "bndyId": "5M2OlxTbMCg7LdmCqLDx",
+      "bndyName": "Crosshair",
+      "confidence": 100,
+      "location": "Stoke-on-Trent",
+      "klmaExternalIds": [],
+      "action": "MATCH_EXISTING"
+    },
+    {
+      "source": "Stone Cold Sober...ish",
+      "gigs": 9,
+      "bndyId": "8lb48YBZdAJ0BngqjnvX",
+      "bndyName": "Stone Cold Sober...Ish",
+      "confidence": 100,
+      "klmaExternalIds": [],
+      "action": "MATCH_EXISTING",
+      "note": "case-only diff (...ish vs ...Ish) -> normalise case before scoring"
+    },
+    {
+      "source": "Walters & Bligh",
+      "gigs": 7,
+      "bndyId": "f0e4328e-9f79-4e54-baf0-2374db1869f5",
+      "bndyName": "Walters & Bligh",
+      "confidence": 100,
+      "location": "Stoke-on-Trent",
+      "klmaExternalIds": [],
+      "action": "MATCH_EXISTING"
+    }
+  ]
+}
