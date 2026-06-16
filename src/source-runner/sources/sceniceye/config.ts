@@ -37,7 +37,7 @@ export const scenicEyeConfig: SourceConfig = {
 
   eventPolicy: {
     createPublicEvents: true,
-    // No missingTimeDefault - Scenic Eye always has explicit times
+    missingTimeDefault: '20:00', // Scenic Eye always has explicit times, but schema requires this
     deleteFutureMissingRows: true,
     neverDeletePastEvents: true,
     duplicateEventBehaviour: 'attach_external_id_no_clobber',
