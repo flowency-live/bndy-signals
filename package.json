@@ -11,7 +11,13 @@
     "typecheck": "tsc --noEmit",
     "cdk": "cdk",
     "deploy:dev": "cdk deploy --all --require-approval never",
-    "deploy:prod": "cdk deploy --all --require-approval broadening"
+    "deploy:prod": "cdk deploy --all --require-approval broadening",
+    "source:run": "node dist/src/source-runner/cli.js source:run",
+    "source:dry-run": "node dist/src/source-runner/cli.js source:dry-run",
+    "intelligence:run": "node dist/src/intelligence/cli.js intelligence:run",
+    "intelligence:dry-run": "node dist/src/intelligence/cli.js intelligence:dry-run",
+    "docker:build": "docker build -f Dockerfile.source-runner -t bndy-source-runner .",
+    "docker:push": "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 771551874768.dkr.ecr.eu-west-2.amazonaws.com && docker tag bndy-source-runner:latest 771551874768.dkr.ecr.eu-west-2.amazonaws.com/bndy-source-runner-prod:latest && docker push 771551874768.dkr.ecr.eu-west-2.amazonaws.com/bndy-source-runner-prod:latest"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.161",
@@ -33,7 +39,10 @@
     "@aws-sdk/client-textract": "^3.1041.0",
     "@aws-sdk/lib-dynamodb": "^3.490.0",
     "@aws-sdk/s3-request-presigner": "^3.490.0",
+    "@sparticuz/chromium": "^149.0.0",
     "nanoid": "^5.0.4",
+    "puppeteer": "^25.1.0",
+    "puppeteer-core": "^25.1.0",
     "zod": "^3.22.4"
   },
   "engines": {

@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { StorageStack } from '../lib/storage-stack';
 import { ApiStack } from '../lib/api-stack';
 import { WorkflowStack } from '../lib/workflow-stack';
+import { SourceRunnerStack } from '../lib/source-runner-stack';
 
 const app = new cdk.App();
 
@@ -32,4 +33,11 @@ new ApiStack(app, `BndySignals-Api-${stage}`, {
   signalsBucket: storageStack.signalsBucket,
   signalsTable: storageStack.signalsTable,
   signalWorkflow: workflowStack.signalWorkflow,
+});
+
+// Source Runner stack - standalone, imports S3 bucket by name
+new SourceRunnerStack(app, `BndySourceRunner-${stage}`, {
+  env,
+  stage,
+  // Uses existing signals bucket via import (no dependency on StorageStack)
 });
