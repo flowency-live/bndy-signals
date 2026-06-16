@@ -5,7 +5,6 @@ node_modules/
 dist/
 cdk.out/
 *.js
-!eslint.config.js
 *.d.ts
 *.js.map
 
