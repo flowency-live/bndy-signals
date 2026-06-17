@@ -60,4 +60,4 @@ jobs:
           aws-region: eu-west-2
 
       - name: Deploy CDK
-        run: npx cdk deploy --all --require-approval broadening
+        run: npx cdk deploy --all --context stage=prod --require-approval broadening
