@@ -33,11 +33,11 @@ describe('onTheCaseAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup Puppeteer mock - evaluate returns rendered text, not HTML
+    // Setup Puppeteer mock - $eval returns rendered text, not HTML
     const mockPage = {
       goto: vi.fn().mockResolvedValue(undefined),
       waitForSelector: vi.fn().mockResolvedValue(undefined),
-      evaluate: vi.fn().mockResolvedValue(`Thursday 11 / June 2026
+      $eval: vi.fn().mockResolvedValue(`Thursday 11 / June 2026
 Babel Fish at Blacksmiths Arms Gosforth
 200 High Street / Gosforth / 0191 213 5302
 9:00 PM / FREE`),
@@ -78,11 +78,11 @@ Babel Fish at Blacksmiths Arms Gosforth
   });
 
   it('should park skipped gigs', async () => {
-    // Setup mock to return content with TBC - evaluate returns text
+    // Setup mock to return content with TBC - $eval returns text
     const mockPage = {
       goto: vi.fn().mockResolvedValue(undefined),
       waitForSelector: vi.fn().mockResolvedValue(undefined),
-      evaluate: vi.fn().mockResolvedValue(`Thursday 11 / June 2026
+      $eval: vi.fn().mockResolvedValue(`Thursday 11 / June 2026
 TBC at Some Venue Newcastle
 Street / Newcastle / 0191 111 1111
 9:00 PM / FREE`),

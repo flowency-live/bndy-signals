@@ -69,7 +69,7 @@ export async function fetchScenicEyeSource(
 
     // Return the RENDERED TEXT (matches the get_page_text the parser was built/tested against),
     // not raw HTML. page.content() handed the line-based parser HTML tags → 0 valid events.
-    const content = await page.evaluate(() => document.body.innerText);
+    const content = await page.$eval('body', (el) => el.innerText);
     await page.close();
 
     return {

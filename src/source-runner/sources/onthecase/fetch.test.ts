@@ -64,7 +64,7 @@ describe('fetchOnTheCaseSource', () => {
   let mockPage: {
     goto: ReturnType<typeof vi.fn>;
     waitForSelector: ReturnType<typeof vi.fn>;
-    evaluate: ReturnType<typeof vi.fn>;
+    $eval: ReturnType<typeof vi.fn>;
     close: ReturnType<typeof vi.fn>;
   };
   let mockBrowser: {
@@ -76,7 +76,7 @@ describe('fetchOnTheCaseSource', () => {
     mockPage = {
       goto: vi.fn().mockResolvedValue(undefined),
       waitForSelector: vi.fn().mockResolvedValue(undefined),
-      evaluate: vi.fn().mockResolvedValue('Test content'),
+      $eval: vi.fn().mockResolvedValue('Test content'),
       close: vi.fn().mockResolvedValue(undefined),
     };
 
@@ -122,7 +122,7 @@ describe('fetchOnTheCaseSource', () => {
 
   it('should return page text content as body', async () => {
     const expectedContent = 'Gig listings here';
-    mockPage.evaluate.mockResolvedValue(expectedContent);
+    mockPage.$eval.mockResolvedValue(expectedContent);
 
     const result = await fetchOnTheCaseSource(mockConfig, mockRun);
 
