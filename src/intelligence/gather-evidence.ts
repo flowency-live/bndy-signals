@@ -169,7 +169,7 @@ function extractFbHandle(facebookUrl?: string): string | undefined {
 
   for (const pattern of patterns) {
     const match = facebookUrl.match(pattern);
-    if (match) {
+    if (match && match[1]) {
       const handle = match[1];
       // Skip generic paths
       if (['pages', 'profile.php', 'groups'].includes(handle)) continue;

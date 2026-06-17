@@ -145,12 +145,12 @@ async function fetchReviewItems(
     throw new Error(`Failed to fetch review items: HTTP ${response.status}`);
   }
 
-  const data = (await response.json()) as { items: unknown[]; count: number };
+  const data = (await response.json()) as { items: Record<string, unknown>[]; count: number };
   console.log(`Found ${data.count} open review items`);
 
   // Transform to ReviewItemInput format
   // The API returns items with slightly different field names
-  return data.items.map((item: Record<string, unknown>) => ({
+  return data.items.map((item) => ({
     id: item.id as string,
     sourceId: item.sourceId as string,
     runId: item.runId as string,

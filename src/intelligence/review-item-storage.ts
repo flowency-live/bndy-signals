@@ -97,7 +97,7 @@ export async function markReviewItemResolved(
       resolvedAt: new Date().toISOString(),
       resolvedBy: 'intelligence-pass',
       resolvedEntityId,
-    };
+    } as StoredReviewItem;
 
     // Write back
     await s3.send(
@@ -138,7 +138,7 @@ export function extractRunDateFromRunId(runId: string): string | null {
 
   // Look for date pattern anywhere in the string
   const dateMatch = runId.match(/(\d{4}-\d{2}-\d{2})/);
-  if (dateMatch) {
+  if (dateMatch && dateMatch[1]) {
     return dateMatch[1];
   }
 
