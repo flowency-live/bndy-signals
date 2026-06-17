@@ -88,11 +88,17 @@ export function normaliseGigsNewsGig(
   gig: GigsNewsRawGig,
   config: SourceConfig
 ): NormalisedEvent {
+  // gigs-news venue names embed the locality ("White Hart Woodley" → Woodley). Use it as the city
+  // so geocoding resolves to the right town, instead of the hardcoded default that put every venue
+  // in "Stockport" (mis-geocoding New Mills / Oldham / Mossley / Macclesfield).
+  const venueWords = gig.venue.trim().split(/\s+/);
+  const city = venueWords.length > 1 ? (venueWords[venueWords.length - 1] as string) : config.defaultCity;
+
   const venue: NormalisedVenueRef = {
     sourceVenueExternalId: generateVenueExternalId(gig),
     sourceName: gig.venue,
     canonicalName: gig.venueCanonical,
-    city: config.defaultCity,
+    city,
     region: config.region,
     nameVariants: gig.venue !== gig.venueCanonical ? [gig.venue] : [],
   };

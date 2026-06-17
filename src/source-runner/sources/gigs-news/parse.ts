@@ -52,14 +52,24 @@ const PLACEHOLDER_PATTERNS = [
 // Jam nights to flag
 const JAM_PATTERNS = [/jam$/i, /jam\s*night$/i, /blues\s*jam/i];
 
-// Generic recurring events to flag
+// Generic recurring events to flag (match anywhere in the artist, not anchored —
+// "Karl Magee's Open Mic", "Between the Vines Open Mic", "Dave's karaoke" must all skip)
 const GENERIC_PATTERNS = [
-  /^open\s*mic$/i,
-  /^karaoke$/i,
+  /open\s*mic/i,
+  /karaoke/i,
   /^disco$/i,
   /music\s*quiz/i,
   /^quiz\s*night$/i,
+  /^jazz(\s*night)?$/i, // bare "Jazz" + "Jazz Night"
 ];
+
+// "gigs 2026" footer/booking rows: the parsed "artist" is actually a date ("Saturday 20th June")
+const DATE_AS_ARTIST_PATTERN =
+  /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+\d{1,2}(st|nd|rd|th)\s+\w+/i;
+// A bare time parsed into the artist slot ("4pm", "8:30pm")
+const TIME_AS_ARTIST_PATTERN = /^\d{1,2}([:.]\d{2})?\s*(am|pm)$/i;
+// Booking placeholders carried on the venue ("… - branded", "… - Reserved", "… - Reserved - 4pm")
+const PLACEHOLDER_VENUE_SUFFIX = /-\s*(branded|reserved)\b/i;
 
 // Generic DJ rows to flag for manual review
 const DJ_PATTERNS = [/^dj\s+\w+$/i];
@@ -522,6 +532,20 @@ export function parseGigsNewsPage(
         rawLine: line,
         reason: parsed.skipReason,
       });
+      continue;
+    }
+
+    // "gigs 2026" footer / booking rows: artist is a date, or a bare time, or the venue is a branded/reserved placeholder
+    if (parsed.artist && DATE_AS_ARTIST_PATTERN.test(parsed.artist)) {
+      parked.push({ date: currentDate, rawLine: line, reason: 'footer_date_row' });
+      continue;
+    }
+    if (parsed.artist && TIME_AS_ARTIST_PATTERN.test(parsed.artist)) {
+      parked.push({ date: currentDate, rawLine: line, reason: 'time_not_artist' });
+      continue;
+    }
+    if (parsed.venue && PLACEHOLDER_VENUE_SUFFIX.test(parsed.venue)) {
+      parked.push({ date: currentDate, rawLine: line, reason: 'placeholder_venue_booking' });
       continue;
     }
 
