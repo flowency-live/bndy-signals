@@ -319,11 +319,12 @@ describe('dash format (production innerText)', () => {
     expect(result.time).toBe('16:30');
   });
 
-  it('should parse time with colon in artist part', () => {
+  it('should parse time with colon in artist part and strip trailing "from"', () => {
     const result = parseGigRow('Chris G from 5pm - Windsor Castle Marple Bridge');
-    // "from 5pm" gets extracted as time
-    expect(result.artist).toBe('Chris G from');
+    // "from 5pm" gets extracted as time, trailing "from" stripped from artist
+    expect(result.artist).toBe('Chris G');
     expect(result.venue).toBe('Windsor Castle Marple Bridge');
+    expect(result.time).toBe('17:00');
   });
 
   it('should flag jam nights in dash format', () => {

@@ -60,7 +60,9 @@ const GENERIC_PATTERNS = [
   /^disco$/i,
   /music\s*quiz/i,
   /^quiz\s*night$/i,
-  /^jazz(\s*night)?$/i, // bare "Jazz" + "Jazz Night"
+  /^jazz(\s*night)?$/i, // bare "Jazz" + "Jazz Night" only. NB: a *named* recurring series
+  // ("Jazz at the Railway") is intentionally NOT caught — recurring-series handling is still open.
+  /^football$/i, // a TV sport screening, not a gig ("football - the Dog Inn")
 ];
 
 // "gigs 2026" footer/booking rows: the parsed "artist" is actually a date ("Saturday 20th June")
@@ -232,6 +234,9 @@ function parseGigRowDashFormat(line: string, dashIndex: number): GigRowResult {
 
   if (timeMatch && timeMatch[1]) {
     artist = artistPart.slice(0, artistPart.length - timeMatch[0].length).trim();
+    // gigs-news writes "<artist> from 5pm" — once the time is stripped the connector word is
+    // left dangling on the artist ("Chris G from"). Drop a trailing "from".
+    artist = artist.replace(/\s+from$/i, '').trim();
     time = parseTime(timeMatch[1]);
   } else {
     artist = artistPart;
