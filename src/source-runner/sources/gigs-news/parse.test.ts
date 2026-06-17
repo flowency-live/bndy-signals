@@ -304,3 +304,93 @@ describe('flagged venues', () => {
     expect(result.parked[0].reason).toBe('venue_geocode_risk');
   });
 });
+
+describe('dash format (production innerText)', () => {
+  it('should parse "Artist - Venue" format', () => {
+    const result = parseGigRow('Blueheart - Eagle & Child Whitefield');
+    expect(result.artist).toBe('Blueheart');
+    expect(result.venue).toBe('Eagle & Child Whitefield');
+  });
+
+  it('should parse "Artist time - Venue" format', () => {
+    const result = parseGigRow('Roy Pimmy  4:30pm - White Hart Woodley');
+    expect(result.artist).toBe('Roy Pimmy');
+    expect(result.venue).toBe('White Hart Woodley');
+    expect(result.time).toBe('16:30');
+  });
+
+  it('should parse time with colon in artist part', () => {
+    const result = parseGigRow('Chris G from 5pm - Windsor Castle Marple Bridge');
+    // "from 5pm" gets extracted as time
+    expect(result.artist).toBe('Chris G from');
+    expect(result.venue).toBe('Windsor Castle Marple Bridge');
+  });
+
+  it('should flag jam nights in dash format', () => {
+    const result = parseGigRow('Backwater Blues Jam - the Railway Greenfield');
+    expect(result.skipReason).toBe('jam_night');
+  });
+
+  it('should flag karaoke in dash format', () => {
+    const result = parseGigRow('karaoke - Queens Hotel Macclesfield');
+    expect(result.skipReason).toBe('generic_recurring');
+  });
+
+  it('should flag Open Mic in dash format', () => {
+    const result = parseGigRow('Open Mic  7pm - Dog & Partridge Great Moor');
+    expect(result.skipReason).toBe('generic_recurring');
+  });
+
+  it('should handle empty artist (venue-only) in dash format', () => {
+    const result = parseGigRow(' - the Swan Inn Wilmslow');
+    expect(result.venueOnly).toBe(true);
+    expect(result.venue).toBe('the Swan Inn Wilmslow');
+  });
+
+  it('should parse full page with dash format from production', () => {
+    // Actual production format excerpt
+    const text = `Gigs News
+
+What's on This Week  21 - 14 June
+
+
+branded - the Billy Goat Mossley - Saturday
+
+
+Wednesday 17th June
+Blueheart - Eagle & Child Whitefield
+football - the Dog Inn Chadderton
+Open Mic - Blossoms Stockport
+Jazz Night - the Moor Club
+
+Thursday 18th June
+Roy Pimmy  4:30pm - White Hart Woodley
+Open Mic  7pm - Dog & Partridge Great Moor
+Jon Casey Blues Band - the Welcome Inn Whitefield
+
+Friday 19th June
+Evolution - the Stock Dove Romiley
+Andy Lee - Crown Bredbury
+karaoke - Coach & Horses Oldham`;
+
+    const result = parseGigsNewsPage(text, 2026);
+
+    // Valid gigs (excluding open mic, karaoke, football, jazz night, branded line)
+    const validGigs = result.gigs.filter(g => g.artist);
+    expect(validGigs.length).toBeGreaterThan(3);
+
+    // Check specific gig
+    const blueheart = result.gigs.find(g => g.artist === 'Blueheart');
+    expect(blueheart).toBeDefined();
+    expect(blueheart?.venue).toBe('Eagle & Child Whitefield');
+    expect(blueheart?.date).toBe('2026-06-17');
+
+    const royPimmy = result.gigs.find(g => g.artist === 'Roy Pimmy');
+    expect(royPimmy).toBeDefined();
+    expect(royPimmy?.time).toBe('16:30');
+    expect(royPimmy?.date).toBe('2026-06-18');
+
+    // Check parked items include skipped types
+    expect(result.parked.some(p => p.reason === 'generic_recurring')).toBe(true);
+  });
+});

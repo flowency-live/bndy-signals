@@ -197,7 +197,119 @@ function isFlaggedVenue(venue: string): boolean {
 }
 
 /**
- * Parse a single gig row like "The Ashes at The Royal Oak, 8pm"
+ * Parse dash format: "Artist - Venue" or "Artist time - Venue"
+ * Time may appear after artist name, e.g. "Roy Pimmy  4:30pm - White Hart Woodley"
+ */
+function parseGigRowDashFormat(line: string, dashIndex: number): GigRowResult {
+  const artistPart = line.slice(0, dashIndex).trim();
+  const venue = line.slice(dashIndex + 3).trim(); // Skip " - "
+
+  // Check if line starts with venue marker (empty artist)
+  if (!artistPart) {
+    return {
+      artist: null,
+      venue,
+      venueCanonical: normaliseVenue(venue),
+      time: null,
+      venueOnly: true,
+    };
+  }
+
+  // Extract time from artist part if present (e.g. "Roy Pimmy  4:30pm")
+  const timeMatch = artistPart.match(/\s+(\d{1,2}:?\d{0,2}\s*(?:am|pm))\s*$/i);
+  let artist: string;
+  let time: string | null = null;
+
+  if (timeMatch && timeMatch[1]) {
+    artist = artistPart.slice(0, artistPart.length - timeMatch[0].length).trim();
+    time = parseTime(timeMatch[1]);
+  } else {
+    artist = artistPart;
+  }
+
+  // Check artist against skip patterns
+  for (const pattern of PLACEHOLDER_PATTERNS) {
+    if (pattern.test(artist)) {
+      return {
+        artist: null,
+        venue,
+        venueCanonical: normaliseVenue(venue),
+        time,
+        skipReason: 'placeholder_performer',
+      };
+    }
+  }
+
+  for (const pattern of JAM_PATTERNS) {
+    if (pattern.test(artist)) {
+      return {
+        artist: null,
+        venue,
+        venueCanonical: normaliseVenue(venue),
+        time,
+        skipReason: 'jam_night',
+      };
+    }
+  }
+
+  for (const pattern of GENERIC_PATTERNS) {
+    if (pattern.test(artist)) {
+      return {
+        artist: null,
+        venue,
+        venueCanonical: normaliseVenue(venue),
+        time,
+        skipReason: 'generic_recurring',
+      };
+    }
+  }
+
+  for (const pattern of DJ_PATTERNS) {
+    if (pattern.test(artist)) {
+      return {
+        artist: null,
+        venue,
+        venueCanonical: normaliseVenue(venue),
+        time,
+        skipReason: 'generic_dj',
+      };
+    }
+  }
+
+  // Check for placeholder venue
+  if (/looking for a venue/i.test(venue)) {
+    return {
+      artist,
+      venue,
+      venueCanonical: venue,
+      time,
+      skipReason: 'placeholder_venue',
+    };
+  }
+
+  // Check for flagged venue (geocode risk)
+  if (isFlaggedVenue(venue)) {
+    return {
+      artist,
+      venue,
+      venueCanonical: normaliseVenue(venue),
+      time,
+      skipReason: 'venue_geocode_risk',
+    };
+  }
+
+  return {
+    artist,
+    venue,
+    venueCanonical: normaliseVenue(venue),
+    time,
+  };
+}
+
+/**
+ * Parse a single gig row. Supports two formats:
+ * - Dash format: "Artist - Venue" or "Artist time - Venue"
+ * - At format: "Artist at Venue, time"
  */
 export function parseGigRow(line: string): GigRowResult {
   const trimmed = line.trim();
@@ -209,11 +321,30 @@ export function parseGigRow(line: string): GigRowResult {
     }
   }
 
-  // Split on " at " to get artist and venue+time
+  // Try dash format first (more common in gigs-news): "Artist - Venue" or "Artist time - Venue"
+  // Also handle "- Venue" (venue-only, starts with dash after trim)
+  const dashIndex = trimmed.indexOf(' - ');
+  if (dashIndex > 0) {
+    return parseGigRowDashFormat(trimmed, dashIndex);
+  }
+
+  // Handle venue-only lines that start with "- " after trim
+  if (trimmed.startsWith('- ')) {
+    const venue = trimmed.slice(2).trim();
+    return {
+      artist: null,
+      venue,
+      venueCanonical: normaliseVenue(venue),
+      time: null,
+      venueOnly: true,
+    };
+  }
+
+  // Try " at " format: "Artist at Venue, time"
   const atIndex = trimmed.toLowerCase().indexOf(' at ');
 
   if (atIndex === -1) {
-    // No " at " - might be venue-only row like "The Royal Oak, 8pm"
+    // No " at " or dash - might be venue-only row like "The Royal Oak, 8pm"
     const commaIndex = trimmed.indexOf(',');
     if (commaIndex > 0) {
       const possibleVenue = trimmed.slice(0, commaIndex).trim();

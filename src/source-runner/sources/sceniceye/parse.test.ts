@@ -332,3 +332,130 @@ describe('parseScenicEyePage', () => {
     expect(result.staleReason).toContain('header');
   });
 });
+
+describe('multi-line table format (production innerText)', () => {
+  it('parses day header with full date', () => {
+    const result = parseDayHeader('Thursday 11 June 2026');
+    expect(result).not.toBeNull();
+    expect(result?.dayOfWeek).toBe('Thursday');
+  });
+
+  it('parses table format with 3-line gig entries', () => {
+    // Simulates the actual innerText format from production
+    const text = `11 June – 17 June 2026
+
+Thursday 11 June 2026
+Act
+Venue
+Time
+
+Tony Gold
+Number 73 Bar & Kitchen, 73 London Road, Waterlooville, PO7 7EX, England
+7:30 PM – 9:30 PM
+
+Taylor Crowley
+The Crown Inn, 8 High Street, Emsworth, PO10 7AW, England
+8:30 PM – 10:30 PM
+
+Friday 12 June 2026
+Act
+Venue
+Time
+
+Will Tierney
+Stansted Park Garden Centre, Stansted, Stansted Park, Rowlands Castle, PO9 6DX, England
+2:30 PM – 4:30 PM`;
+
+    const result = parseScenicEyePage(text, '2026-06-10');
+
+    expect(result.isStale).toBe(false);
+    expect(result.gigs.length).toBeGreaterThan(0);
+
+    const tonyGold = result.gigs.find(g => g.artist === 'Tony Gold');
+    expect(tonyGold).toBeDefined();
+    expect(tonyGold?.venue).toBe('Number 73 Bar & Kitchen');
+    expect(tonyGold?.time).toBe('19:30');
+    expect(tonyGold?.date).toBe('2026-06-11');
+
+    const taylorCrowley = result.gigs.find(g => g.artist === 'Taylor Crowley');
+    expect(taylorCrowley).toBeDefined();
+    expect(taylorCrowley?.time).toBe('20:30');
+
+    const willTierney = result.gigs.find(g => g.artist === 'Will Tierney');
+    expect(willTierney).toBeDefined();
+    expect(willTierney?.date).toBe('2026-06-12');
+    expect(willTierney?.time).toBe('14:30');
+  });
+
+  it('skips "No gigs listed" rows', () => {
+    const text = `11 June – 17 June 2026
+
+Monday 15 June 2026
+Act
+Venue
+Time
+
+No gigs listed
+
+Tuesday 16 June 2026
+Act
+Venue
+Time
+
+No gigs listed`;
+
+    const result = parseScenicEyePage(text, '2026-06-10');
+    expect(result.gigs).toHaveLength(0);
+    expect(result.isStale).toBe(false);
+  });
+
+  it('handles real production snapshot excerpt', () => {
+    // Actual format from production S3 snapshot
+    const text = `Home
+Consultancy
+Projects
+Blog
+About
+Scenic Eye Gig Bot
+Weekend local picks
+
+11 June – 17 June 2026
+
+Support Your Local Music Scene & Local Pubs!
+
+Thursday 11 June 2026
+Act
+Venue
+Time
+
+Tony Gold
+Number 73 Bar & Kitchen, 73 London Road, Waterlooville, PO7 7EX, England
+7:30 PM – 9:30 PM
+
+Taylor Crowley
+The Crown Inn, 8 High Street, Emsworth, PO10 7AW, England
+8:30 PM – 10:30 PM
+
+Sponsored This Week
+
+Friday 12 June 2026
+Act
+Venue
+Time
+
+Sykick Surfers
+The Woodpecker Pub, 179 London Road, Waterlooville, PO7 7RJ, England
+8:00 PM – 10:00 PM`;
+
+    const result = parseScenicEyePage(text, '2026-06-10');
+
+    expect(result.isStale).toBe(false);
+    expect(result.gigs.length).toBe(3);
+
+    expect(result.gigs[0].artist).toBe('Tony Gold');
+    expect(result.gigs[0].date).toBe('2026-06-11');
+
+    expect(result.gigs[2].artist).toBe('Sykick Surfers');
+    expect(result.gigs[2].date).toBe('2026-06-12');
+  });
+});

@@ -6,7 +6,9 @@
  * 2. {Street} / {Locality} / {Phone}
  * 3. {Start time} / {Price}
  *
- * Grouped under date headers like "Thursday 11 / June 2026"
+ * Date headers come in two formats depending on fetch method:
+ * - Single line: "Thursday 11 / June 2026" (old get_page_text)
+ * - Multi-line: "Thursday 18" then "June 2026" (Puppeteer innerText)
  */
 
 const MONTHS: Record<string, string> = {
@@ -68,22 +70,49 @@ export interface OnTheCaseParseResult {
 }
 
 /**
- * Parse a date header like "Thursday 11 / June 2026"
+ * Parse a date header like "Thursday 11 / June 2026" (single line)
+ * or combined from "Thursday 18" + "June 2026" (multi-line).
  * Returns ISO date string (YYYY-MM-DD) or null if not a date header.
  */
 export function parseDateHeader(line: string): string | null {
-  // Pattern: Day DD / Month YYYY
-  const match = line.match(/^\w+\s+(\d{1,2})\s*\/\s*(\w+)\s+(\d{4})$/);
-  if (!match || !match[1] || !match[2] || !match[3]) return null;
+  // Pattern: Day DD / Month YYYY (single line with slash)
+  const matchSlash = line.match(/^\w+\s+(\d{1,2})\s*\/\s*(\w+)\s+(\d{4})$/);
+  if (matchSlash && matchSlash[1] && matchSlash[2] && matchSlash[3]) {
+    const day = matchSlash[1].padStart(2, '0');
+    const monthName = matchSlash[2].toLowerCase();
+    const year = matchSlash[3];
+    const month = MONTHS[monthName];
+    if (month) return `${year}-${month}-${day}`;
+  }
 
-  const day = match[1].padStart(2, '0');
-  const monthName = match[2].toLowerCase();
-  const year = match[3];
+  // Pattern: Day DD Month YYYY (multi-line joined with space)
+  const matchSpace = line.match(/^\w+\s+(\d{1,2})\s+(\w+)\s+(\d{4})$/);
+  if (matchSpace && matchSpace[1] && matchSpace[2] && matchSpace[3]) {
+    const day = matchSpace[1].padStart(2, '0');
+    const monthName = matchSpace[2].toLowerCase();
+    const year = matchSpace[3];
+    const month = MONTHS[monthName];
+    if (month) return `${year}-${month}-${day}`;
+  }
 
-  const month = MONTHS[monthName];
-  if (!month) return null;
+  return null;
+}
 
-  return `${year}-${month}-${day}`;
+/**
+ * Check if a line is a partial date header (day + number only).
+ * e.g. "Thursday 18", "Friday 19"
+ */
+export function isPartialDateHeader(line: string): boolean {
+  return /^\w+\s+\d{1,2}$/.test(line);
+}
+
+/**
+ * Check if a line is a month-year line.
+ * e.g. "June 2026", "July 2026"
+ */
+export function isMonthYearLine(line: string): boolean {
+  const monthName = line.split(/\s+/)[0]?.toLowerCase();
+  return monthName !== undefined && monthName in MONTHS && /\d{4}$/.test(line);
 }
 
 /**
@@ -213,8 +242,9 @@ function parseTime(timeStr: string): string {
 }
 
 /**
- * Parse the full On The Case HTML page into gigs.
- * Extracts text lines and groups them by date header.
+ * Parse the full On The Case page into gigs.
+ * Handles both plain text (innerText) and HTML input.
+ * Date headers may be single-line or multi-line (Puppeteer innerText splits them).
  */
 export function parseOnTheCasePage(html: string): OnTheCaseParseResult {
   // Strip HTML tags and get text lines
@@ -229,19 +259,39 @@ export function parseOnTheCasePage(html: string): OnTheCaseParseResult {
 
   let currentDate: string | null = null;
   let lineBuffer: string[] = [];
+  let i = 0;
 
-  for (const line of lines) {
-    // Check if it's a date header
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Check if it's a full date header (single line)
     const date = parseDateHeader(line);
     if (date) {
-      // Process any buffered lines under previous date
       processBuffer(lineBuffer, currentDate, gigs, parked);
       lineBuffer = [];
       currentDate = date;
+      i++;
       continue;
     }
 
-    // Accumulate lines
+    // Check for multi-line date header: "Thursday 18" + "June 2026"
+    if (isPartialDateHeader(line) && i + 1 < lines.length) {
+      const nextLine = lines[i + 1];
+      if (isMonthYearLine(nextLine)) {
+        // Combine the two lines and parse
+        const combined = `${line} ${nextLine}`;
+        const combinedDate = parseDateHeader(combined);
+        if (combinedDate) {
+          processBuffer(lineBuffer, currentDate, gigs, parked);
+          lineBuffer = [];
+          currentDate = combinedDate;
+          i += 2; // Skip both lines
+          continue;
+        }
+      }
+    }
+
+    // Accumulate lines for gig processing
     lineBuffer.push(line);
 
     // If we have 3 lines, process as a gig
@@ -249,6 +299,8 @@ export function parseOnTheCasePage(html: string): OnTheCaseParseResult {
       processGig(lineBuffer as [string, string, string], currentDate, gigs, parked);
       lineBuffer = [];
     }
+
+    i++;
   }
 
   // Process any remaining lines

@@ -16,29 +16,70 @@ import {
   parseGigLine1,
   parseGigLine2,
   parseGigLine3,
+  isPartialDateHeader,
+  isMonthYearLine,
   OnTheCaseRawGig,
 } from './parse';
 
 describe('parseDateHeader', () => {
-  it('should parse "Thursday 11 / June 2026"', () => {
+  it('should parse single-line format "Thursday 11 / June 2026"', () => {
     const result = parseDateHeader('Thursday 11 / June 2026');
     expect(result).toBe('2026-06-11');
   });
 
-  it('should parse "Friday 20 / December 2026"', () => {
+  it('should parse single-line format "Friday 20 / December 2026"', () => {
     const result = parseDateHeader('Friday 20 / December 2026');
     expect(result).toBe('2026-12-20');
   });
 
-  it('should parse "Saturday 1 / January 2027"', () => {
+  it('should parse single-line format "Saturday 1 / January 2027"', () => {
     const result = parseDateHeader('Saturday 1 / January 2027');
     expect(result).toBe('2027-01-01');
+  });
+
+  it('should parse multi-line format combined "Thursday 18 June 2026"', () => {
+    const result = parseDateHeader('Thursday 18 June 2026');
+    expect(result).toBe('2026-06-18');
+  });
+
+  it('should parse multi-line format combined "Friday 03 July 2026"', () => {
+    const result = parseDateHeader('Friday 03 July 2026');
+    expect(result).toBe('2026-07-03');
   });
 
   it('should return null for non-date lines', () => {
     expect(parseDateHeader('Babel Fish at Blacksmiths Arms Gosforth')).toBeNull();
     expect(parseDateHeader('200 High Street / Gosforth / 0191 213 5302')).toBeNull();
     expect(parseDateHeader('9:00 PM / FREE')).toBeNull();
+  });
+});
+
+describe('isPartialDateHeader', () => {
+  it('should detect partial date headers', () => {
+    expect(isPartialDateHeader('Thursday 18')).toBe(true);
+    expect(isPartialDateHeader('Friday 19')).toBe(true);
+    expect(isPartialDateHeader('Saturday 1')).toBe(true);
+    expect(isPartialDateHeader('Monday 22')).toBe(true);
+  });
+
+  it('should not match non-date lines', () => {
+    expect(isPartialDateHeader('June 2026')).toBe(false);
+    expect(isPartialDateHeader('Babel Fish at Venue')).toBe(false);
+    expect(isPartialDateHeader('9:00 PM / FREE')).toBe(false);
+  });
+});
+
+describe('isMonthYearLine', () => {
+  it('should detect month-year lines', () => {
+    expect(isMonthYearLine('June 2026')).toBe(true);
+    expect(isMonthYearLine('July 2026')).toBe(true);
+    expect(isMonthYearLine('December 2027')).toBe(true);
+  });
+
+  it('should not match non-month-year lines', () => {
+    expect(isMonthYearLine('Thursday 18')).toBe(false);
+    expect(isMonthYearLine('Some Venue')).toBe(false);
+    expect(isMonthYearLine('9:00 PM')).toBe(false);
   });
 });
 
@@ -209,5 +250,75 @@ describe('parseOnTheCasePage', () => {
     expect(result.gigs).toHaveLength(0);
     expect(result.parked).toHaveLength(1);
     expect(result.parked[0].reason).toBe('private_function');
+  });
+
+  it('should handle multi-line date headers from Puppeteer innerText', () => {
+    // This is the actual format from production - date on two lines
+    const text = `Thursday 18
+June 2026
+A Band Called Horse at Billy Bootleggers, Byker Newcastle
+2 Stepney Bank Byker / Newcastle /
+8:00 PM / FREE
+
+Brydon Trio at Blacksmiths Arms Gosforth
+200 High Street / Gosforth / 0191 213 5302
+9:00 PM / FREE
+
+Friday 19
+June 2026
+Magic Beans at Crown and Cannon Winlaton
+Front Street / Winlaton Gateshead /
+9:00 PM / FREE`;
+
+    const result = parseOnTheCasePage(text);
+    expect(result.gigs).toHaveLength(3);
+
+    expect(result.gigs[0].date).toBe('2026-06-18');
+    expect(result.gigs[0].artist).toBe('A Band Called Horse');
+    expect(result.gigs[0].venue).toBe('Billy Bootleggers, Byker Newcastle');
+
+    expect(result.gigs[1].date).toBe('2026-06-18');
+    expect(result.gigs[1].artist).toBe('Brydon Trio');
+    expect(result.gigs[1].venue).toBe('Blacksmiths Arms Gosforth');
+
+    expect(result.gigs[2].date).toBe('2026-06-19');
+    expect(result.gigs[2].artist).toBe('Magic Beans');
+    expect(result.gigs[2].venue).toBe('Crown and Cannon Winlaton');
+  });
+
+  it('should handle real production snapshot excerpt', () => {
+    // Actual excerpt from production S3 snapshot
+    const text = `Home About Us Gigs Venues Bands Cancellations PA Hire Tuition Contact Us
+Go.
+Signup for regular gig updates:
+
+
+View All Pick A Date Featured Venues Select Location
+Thursday 18
+June 2026
+Buskers night at Old Fat Ox Holywell
+Holywell Dene Road / Holywell Whitley Bay / 0191 366 0272
+8:00 PM / FREE
+
+Friday 19
+June 2026
+A Band Called Horse at Billy Bootleggers, Byker Newcastle
+2 Stepney Bank Byker / Newcastle /
+8:00 PM / FREE
+
+Brydon Trio at Blacksmiths Arms Gosforth
+200 High Street / Gosforth / 0191 213 5302
+9:00 PM / FREE`;
+
+    const result = parseOnTheCasePage(text);
+    // Buskers night is parked as generic_recurring
+    expect(result.parked).toHaveLength(1);
+    expect(result.parked[0].reason).toBe('generic_recurring');
+
+    // Two valid gigs
+    expect(result.gigs).toHaveLength(2);
+    expect(result.gigs[0].date).toBe('2026-06-19');
+    expect(result.gigs[0].artist).toBe('A Band Called Horse');
+    expect(result.gigs[1].artist).toBe('Brydon Trio');
   });
 });

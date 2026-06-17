@@ -38,6 +38,9 @@ const DAY_OFFSETS: Record<string, number> = {
   friday: 1,
   saturday: 2,
   sunday: 3,
+  monday: 4,
+  tuesday: 5,
+  wednesday: 6,
 };
 
 export interface WeekHeaderResult {
@@ -104,12 +107,25 @@ export function parseWeekHeader(line: string): WeekHeaderResult | null {
 }
 
 /**
- * Parse day header like "Thursday", "Friday", etc.
+ * Parse day header like "Thursday 11 June 2026" or just "Thursday".
+ * Returns day of week for day offset calculation.
  */
 export function parseDayHeader(line: string): DayHeaderResult | null {
   const trimmed = line.trim();
-  const days = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const days = ['Thursday', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday'];
 
+  // Check for full date format: "Thursday 11 June 2026"
+  const dateMatch = trimmed.match(/^(\w+)\s+\d{1,2}\s+\w+\s+\d{4}$/i);
+  if (dateMatch && dateMatch[1]) {
+    const dayWord = dateMatch[1];
+    for (const day of days) {
+      if (dayWord.toLowerCase() === day.toLowerCase()) {
+        return { dayOfWeek: day };
+      }
+    }
+  }
+
+  // Also accept just the day name
   for (const day of days) {
     if (trimmed.toLowerCase() === day.toLowerCase()) {
       return { dayOfWeek: day };
@@ -161,7 +177,8 @@ function normaliseArtist(artist: string): string {
 }
 
 /**
- * Parse a gig row like "The Ashes at West Town Inn, 22 West Town Lane, Hayling Island, 8pm"
+ * Parse a single-line gig row like "The Ashes at West Town Inn, 22 West Town Lane, Hayling Island, 8pm"
+ * This handles the old format where all info is on one line.
  */
 export function parseGigRow(line: string): GigRowResult | null {
   const trimmed = line.trim();
@@ -204,6 +221,56 @@ export function parseGigRow(line: string): GigRowResult | null {
     venueAddress,
     time,
   };
+}
+
+/**
+ * Parse a time range like "7:30 PM – 9:30 PM" or "8:00 PM – 10:00 PM"
+ * Returns just the start time in HH:MM format.
+ */
+function parseTimeRange(timeStr: string): string {
+  // Split on dash or en-dash
+  const parts = timeStr.split(/\s*[–-]\s*/);
+  if (parts.length === 0 || !parts[0]) return '';
+
+  // Parse the first (start) time
+  const startTime = parts[0].trim();
+
+  // Handle "7:30 PM" format
+  const match = startTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match && match[1] && match[2] && match[3]) {
+    let hour = parseInt(match[1], 10);
+    const min = match[2];
+    const period = match[3].toUpperCase();
+
+    if (period === 'PM' && hour < 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+
+    return `${hour.toString().padStart(2, '0')}:${min}`;
+  }
+
+  return parseTime(startTime);
+}
+
+/**
+ * Check if a line is the table header row (Act, Venue, Time).
+ */
+function isTableHeader(line: string): boolean {
+  const lower = line.toLowerCase().trim();
+  return lower === 'act' || lower === 'venue' || lower === 'time';
+}
+
+/**
+ * Check if a line is a "No gigs listed" placeholder.
+ */
+function isNoGigsLine(line: string): boolean {
+  return /no gigs listed/i.test(line);
+}
+
+/**
+ * Check if a line looks like a sponsored/ad section.
+ */
+function isSponsoredLine(line: string): boolean {
+  return /^sponsored/i.test(line.trim()) || /^📌/.test(line.trim());
 }
 
 /**
@@ -253,7 +320,8 @@ function calculateDayDate(
 
 /**
  * Parse the full Scenic Eye page into gigs.
- * @param html The raw HTML content
+ * Handles both single-line format and multi-line table format from innerText.
+ * @param html The raw HTML content or innerText
  * @param runDate The run date (YYYY-MM-DD) for staleness check
  */
 export function parseScenicEyePage(
@@ -300,33 +368,88 @@ export function parseScenicEyePage(
     };
   }
 
-  // Parse gigs
+  // Parse gigs - handle both single-line and multi-line (table) formats
   let currentDay: string | null = null;
   let currentDate: string | null = null;
+  let i = 0;
 
-  for (const line of lines) {
+  while (i < lines.length) {
+    const line = lines[i];
+
     // Check if it's a day header
     const dayHeader = parseDayHeader(line);
     if (dayHeader) {
       currentDay = dayHeader.dayOfWeek;
       currentDate = calculateDayDate(weekHeader, currentDay);
+      i++;
+      continue;
+    }
+
+    // Skip table headers, sponsored lines, no gigs placeholders
+    if (isTableHeader(line) || isSponsoredLine(line) || isNoGigsLine(line)) {
+      i++;
       continue;
     }
 
     // Skip if no current date set
-    if (!currentDate) continue;
+    if (!currentDate) {
+      i++;
+      continue;
+    }
 
-    // Try to parse as gig row
-    const parsed = parseGigRow(line);
-    if (!parsed) continue;
+    // Try single-line format first (old format with " at ")
+    const singleLineParsed = parseGigRow(line);
+    if (singleLineParsed) {
+      gigs.push({
+        date: currentDate,
+        artist: singleLineParsed.artist,
+        venue: singleLineParsed.venue,
+        venueAddress: singleLineParsed.venueAddress,
+        time: singleLineParsed.time,
+      });
+      i++;
+      continue;
+    }
 
-    gigs.push({
-      date: currentDate,
-      artist: parsed.artist,
-      venue: parsed.venue,
-      venueAddress: parsed.venueAddress,
-      time: parsed.time,
-    });
+    // Try multi-line table format: Artist, Venue+Address, TimeRange on 3 consecutive lines
+    // Skip if this looks like a header or metadata line
+    if (i + 2 < lines.length && !isTableHeader(line)) {
+      const artistLine = line;
+      const venueLine = lines[i + 1];
+      const timeLine = lines[i + 2];
+
+      // Validate: timeLine should look like a time range
+      if (venueLine && timeLine && /\d{1,2}:\d{2}\s*(AM|PM)/i.test(timeLine)) {
+        // Check it's not another day header or table header
+        if (!parseDayHeader(venueLine) && !isTableHeader(venueLine) &&
+            !parseDayHeader(timeLine) && !isTableHeader(timeLine)) {
+
+          const time = parseTimeRange(timeLine);
+          if (time) {
+            // Parse venue - may have address embedded
+            const venueParts = venueLine.split(',').map((p) => p.trim());
+            const venue = venueParts[0] || venueLine;
+            const venueAddress = venueParts.slice(1).join(', ');
+
+            const artist = normaliseArtist(artistLine);
+
+            gigs.push({
+              date: currentDate,
+              artist,
+              venue,
+              venueAddress,
+              time,
+            });
+
+            i += 3; // Skip all 3 lines
+            continue;
+          }
+        }
+      }
+    }
+
+    // Not a gig row, skip
+    i++;
   }
 
   return {
