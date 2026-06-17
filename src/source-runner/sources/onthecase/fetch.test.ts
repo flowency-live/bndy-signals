@@ -64,7 +64,7 @@ describe('fetchOnTheCaseSource', () => {
   let mockPage: {
     goto: ReturnType<typeof vi.fn>;
     waitForSelector: ReturnType<typeof vi.fn>;
-    content: ReturnType<typeof vi.fn>;
+    evaluate: ReturnType<typeof vi.fn>;
     close: ReturnType<typeof vi.fn>;
   };
   let mockBrowser: {
@@ -76,7 +76,7 @@ describe('fetchOnTheCaseSource', () => {
     mockPage = {
       goto: vi.fn().mockResolvedValue(undefined),
       waitForSelector: vi.fn().mockResolvedValue(undefined),
-      content: vi.fn().mockResolvedValue('<html><body>Test content</body></html>'),
+      evaluate: vi.fn().mockResolvedValue('Test content'),
       close: vi.fn().mockResolvedValue(undefined),
     };
 
@@ -120,13 +120,14 @@ describe('fetchOnTheCaseSource', () => {
     expect(mockPage.waitForSelector).toHaveBeenCalled();
   });
 
-  it('should return page content as body', async () => {
-    const expectedContent = '<html><body>Gig listings here</body></html>';
-    mockPage.content.mockResolvedValue(expectedContent);
+  it('should return page text content as body', async () => {
+    const expectedContent = 'Gig listings here';
+    mockPage.evaluate.mockResolvedValue(expectedContent);
 
     const result = await fetchOnTheCaseSource(mockConfig, mockRun);
 
     expect(result.body).toBe(expectedContent);
+    // kind stays 'html' for compatibility even though content is now text
     expect(result.kind).toBe('html');
   });
 

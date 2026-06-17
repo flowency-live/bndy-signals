@@ -1,0 +1,107 @@
+# Dockerfile for bndy Source Runner
+#
+# Builds a container to run the source runner CLI.
+# Designed for AWS Fargate execution.
+#
+# Build:
+#   docker build -f Dockerfile.source-runner -t bndy-source-runner .
+#
+# Run locally:
+#   docker run --rm \
+#     -e AWS_REGION=eu-west-2 \
+#     -e BNDY_API_BASE=https://api.bndy.co.uk \
+#     bndy-source-runner npm run source:run -- klma-stoke-gig-list --dry-run
+#
+# Push to ECR:
+#   aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin <account>.dkr.ecr.eu-west-2.amazonaws.com
+#   docker tag bndy-source-runner:latest <account>.dkr.ecr.eu-west-2.amazonaws.com/bndy-source-runner-prod:latest
+#   docker push <account>.dkr.ecr.eu-west-2.amazonaws.com/bndy-source-runner-prod:latest
+
+# Stage 1: Build
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
+
+# Copy source code
+COPY src/ ./src/
+
+# Build TypeScript
+RUN npm run build
+
+# Prune devDependencies
+RUN npm prune --production
+
+# Stage 2: Production with Chromium for Puppeteer
+FROM node:20-slim AS runner
+
+# Add labels
+LABEL org.opencontainers.image.title="bndy Source Runner"
+LABEL org.opencontainers.image.description="Deterministic source import for bndy"
+LABEL org.opencontainers.image.vendor="bndy"
+
+# Install Chromium dependencies for Puppeteer
+# Note: Using Debian-slim packages, not Alpine
+RUN apt-get update && apt-get install -y \
+    chromium \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tell Puppeteer to use system Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Create non-root user
+RUN groupadd -g 1001 nodejs && \
+    useradd -m -u 1001 -g nodejs nodejs
+
+WORKDIR /app
+
+# Copy built artifacts and production dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
+
+# Copy source config files (needed at runtime)
+COPY src/source-runner/config/ ./dist/source-runner/config/
+
+# Set ownership
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Environment defaults
+ENV NODE_ENV=production
+ENV BNDY_API_BASE=https://api.bndy.co.uk
+
+# Health check (optional - Fargate doesn't require this but useful for debugging)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "console.log('healthy')" || exit 1
+
+# Default command (can be overridden)
+# Usage: docker run <image> npm run source:run -- <source-id> [options]
+CMD ["npm", "run", "source:run", "--", "klma-stoke-gig-list", "--dry-run"]

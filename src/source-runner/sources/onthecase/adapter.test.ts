@@ -33,18 +33,14 @@ describe('onTheCaseAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup Puppeteer mock
+    // Setup Puppeteer mock - evaluate returns rendered text, not HTML
     const mockPage = {
       goto: vi.fn().mockResolvedValue(undefined),
       waitForSelector: vi.fn().mockResolvedValue(undefined),
-      content: vi.fn().mockResolvedValue(`
-        <html><body>
-          <div>Thursday 11 / June 2026</div>
-          <div>Babel Fish at Blacksmiths Arms Gosforth</div>
-          <div>200 High Street / Gosforth / 0191 213 5302</div>
-          <div>9:00 PM / FREE</div>
-        </body></html>
-      `),
+      evaluate: vi.fn().mockResolvedValue(`Thursday 11 / June 2026
+Babel Fish at Blacksmiths Arms Gosforth
+200 High Street / Gosforth / 0191 213 5302
+9:00 PM / FREE`),
       close: vi.fn().mockResolvedValue(undefined),
     };
 
@@ -82,18 +78,14 @@ describe('onTheCaseAdapter', () => {
   });
 
   it('should park skipped gigs', async () => {
-    // Setup mock to return content with TBC
+    // Setup mock to return content with TBC - evaluate returns text
     const mockPage = {
       goto: vi.fn().mockResolvedValue(undefined),
       waitForSelector: vi.fn().mockResolvedValue(undefined),
-      content: vi.fn().mockResolvedValue(`
-        <html><body>
-          <div>Thursday 11 / June 2026</div>
-          <div>TBC at Some Venue Newcastle</div>
-          <div>Street / Newcastle / 0191 111 1111</div>
-          <div>9:00 PM / FREE</div>
-        </body></html>
-      `),
+      evaluate: vi.fn().mockResolvedValue(`Thursday 11 / June 2026
+TBC at Some Venue Newcastle
+Street / Newcastle / 0191 111 1111
+9:00 PM / FREE`),
       close: vi.fn().mockResolvedValue(undefined),
     };
 

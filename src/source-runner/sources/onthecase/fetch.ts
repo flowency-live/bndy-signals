@@ -64,7 +64,9 @@ export async function fetchOnTheCaseSource(
     // Give React/Vue/whatever a moment to hydrate
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const content = await page.content();
+    // Return the RENDERED TEXT (matches the get_page_text the parser was built/tested against),
+    // not raw HTML. page.content() handed the line-based parser HTML tags → 0 valid events.
+    const content = await page.evaluate(() => document.body.innerText);
     await page.close();
 
     return {
