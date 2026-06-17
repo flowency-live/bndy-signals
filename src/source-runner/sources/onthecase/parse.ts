@@ -263,6 +263,10 @@ export function parseOnTheCasePage(html: string): OnTheCaseParseResult {
 
   while (i < lines.length) {
     const line = lines[i];
+    if (!line) {
+      i++;
+      continue;
+    }
 
     // Check if it's a full date header (single line)
     const date = parseDateHeader(line);
@@ -275,19 +279,17 @@ export function parseOnTheCasePage(html: string): OnTheCaseParseResult {
     }
 
     // Check for multi-line date header: "Thursday 18" + "June 2026"
-    if (isPartialDateHeader(line) && i + 1 < lines.length) {
-      const nextLine = lines[i + 1];
-      if (isMonthYearLine(nextLine)) {
-        // Combine the two lines and parse
-        const combined = `${line} ${nextLine}`;
-        const combinedDate = parseDateHeader(combined);
-        if (combinedDate) {
-          processBuffer(lineBuffer, currentDate, gigs, parked);
-          lineBuffer = [];
-          currentDate = combinedDate;
-          i += 2; // Skip both lines
-          continue;
-        }
+    const nextLine = lines[i + 1];
+    if (isPartialDateHeader(line) && nextLine && isMonthYearLine(nextLine)) {
+      // Combine the two lines and parse
+      const combined = `${line} ${nextLine}`;
+      const combinedDate = parseDateHeader(combined);
+      if (combinedDate) {
+        processBuffer(lineBuffer, currentDate, gigs, parked);
+        lineBuffer = [];
+        currentDate = combinedDate;
+        i += 2; // Skip both lines
+        continue;
       }
     }
 

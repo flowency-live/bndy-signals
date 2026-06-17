@@ -375,6 +375,10 @@ export function parseScenicEyePage(
 
   while (i < lines.length) {
     const line = lines[i];
+    if (!line) {
+      i++;
+      continue;
+    }
 
     // Check if it's a day header
     const dayHeader = parseDayHeader(line);
@@ -413,13 +417,13 @@ export function parseScenicEyePage(
 
     // Try multi-line table format: Artist, Venue+Address, TimeRange on 3 consecutive lines
     // Skip if this looks like a header or metadata line
-    if (i + 2 < lines.length && !isTableHeader(line)) {
+    const venueLine = lines[i + 1];
+    const timeLine = lines[i + 2];
+    if (i + 2 < lines.length && !isTableHeader(line) && venueLine && timeLine) {
       const artistLine = line;
-      const venueLine = lines[i + 1];
-      const timeLine = lines[i + 2];
 
       // Validate: timeLine should look like a time range
-      if (venueLine && timeLine && /\d{1,2}:\d{2}\s*(AM|PM)/i.test(timeLine)) {
+      if (/\d{1,2}:\d{2}\s*(AM|PM)/i.test(timeLine)) {
         // Check it's not another day header or table header
         if (!parseDayHeader(venueLine) && !isTableHeader(venueLine) &&
             !parseDayHeader(timeLine) && !isTableHeader(timeLine)) {
