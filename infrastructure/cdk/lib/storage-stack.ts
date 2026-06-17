@@ -8,34 +8,38 @@ interface StorageStackProps extends cdk.StackProps {
 }
 
 export class StorageStack extends cdk.Stack {
-  public readonly signalsBucket: s3.Bucket;
+  public readonly signalsBucket: s3.IBucket;
   public readonly signalsTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
 
-    // S3 bucket for raw signal content
-    this.signalsBucket = new s3.Bucket(this, 'SignalsBucket', {
-      bucketName: `bndy-signals-${props.stage}-${this.account}`,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      versioned: true,
-      lifecycleRules: [
-        {
-          // Move to IA after 30 days
-          transitions: [
-            {
-              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
-              transitionAfter: cdk.Duration.days(30),
-            },
-          ],
-        },
-      ],
-      removalPolicy:
-        props.stage === 'prod'
-          ? cdk.RemovalPolicy.RETAIN
-          : cdk.RemovalPolicy.DESTROY,
-    });
+    const bucketName = `bndy-signals-${props.stage}-${this.account}`;
+
+    // For prod, import the existing bucket (created manually before CDK was in place)
+    // For dev, create new bucket under CDK management
+    if (props.stage === 'prod') {
+      this.signalsBucket = s3.Bucket.fromBucketName(this, 'SignalsBucket', bucketName);
+    } else {
+      this.signalsBucket = new s3.Bucket(this, 'SignalsBucket', {
+        bucketName,
+        encryption: s3.BucketEncryption.S3_MANAGED,
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        versioned: true,
+        lifecycleRules: [
+          {
+            // Move to IA after 30 days
+            transitions: [
+              {
+                storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+                transitionAfter: cdk.Duration.days(30),
+              },
+            ],
+          },
+        ],
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      });
+    }
 
     // DynamoDB table for signals, interpretations, claims
     this.signalsTable = new dynamodb.Table(this, 'SignalsTable', {

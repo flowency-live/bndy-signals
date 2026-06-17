@@ -12,7 +12,7 @@ import * as path from 'path';
 
 interface WorkflowStackProps extends cdk.StackProps {
   stage: string;
-  signalsBucket: s3.Bucket;
+  signalsBucket: s3.IBucket;
   signalsTable: dynamodb.Table;
 }
 

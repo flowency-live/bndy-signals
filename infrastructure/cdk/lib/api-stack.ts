@@ -10,7 +10,7 @@ import * as path from 'path';
 
 interface ApiStackProps extends cdk.StackProps {
   stage: string;
-  signalsBucket: s3.Bucket;
+  signalsBucket: s3.IBucket;
   signalsTable: dynamodb.Table;
   signalWorkflow: sfn.StateMachine;
 }
