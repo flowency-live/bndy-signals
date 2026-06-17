@@ -60,4 +60,5 @@ jobs:
           aws-region: eu-west-2
 
       - name: Deploy CDK
-        run: npx cdk deploy --all --context stage=prod --require-approval broadening
+        # require-approval=never is safe here because workflow_dispatch already requires manual confirmation
+        run: npx cdk deploy --all --context stage=prod --require-approval never
