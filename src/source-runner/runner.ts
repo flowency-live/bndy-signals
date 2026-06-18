@@ -308,10 +308,14 @@ export async function runSource(
     reportPath = await deps.generateReport(config, run, diff, writeResult);
 
     // Step 14: Complete run
+    // Merge write-stage errors (e.g. CREATE_EVENT_FAILED with the HTTP status) into run.errors.
+    // Without this they're dropped — events fail "silently" with no error and no review item.
+    const writeErrors = writeResult.errors ?? [];
     run = {
       ...run,
       status: reviewItems.length > 0 ? 'completed_with_review_items' : 'completed',
       completedAt: new Date().toISOString(),
+      errors: writeErrors.length > 0 ? [...run.errors, ...writeErrors] : run.errors,
       counts: {
         ...run.counts,
         ...writeResult.counts,
