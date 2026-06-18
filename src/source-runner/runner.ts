@@ -73,6 +73,12 @@ export interface WriteResult {
   success: boolean;
   counts: Partial<SourceRunCounts>;
   errors?: SourceRunError[];
+  /**
+   * Review items produced during the write stage (find-or-create returned no-match under
+   * canCreate:false, or delete→hide). MUST be merged + persisted by the runner — otherwise the
+   * gig is silently lost and the intelligence pass has nothing to resolve.
+   */
+  reviewItems?: ReviewItem[];
 }
 
 export interface SourceRunStorage {
@@ -268,6 +274,15 @@ export async function runSource(
 
       try {
         writeResult = await deps.applyWrites(config, run, resolved, writeOptions);
+
+        // Merge the write-stage review items (artist/venue find-or-create no-match under
+        // canCreate:false, delete→hide) with the resolution-stage ones, then re-persist the FULL
+        // set. Step 10b only wrote the resolution-stage items (it runs before applyWrites); without
+        // this merge the write-stage items are dropped and the intelligence pass sees 0 items.
+        if (writeResult.reviewItems && writeResult.reviewItems.length > 0) {
+          reviewItems = [...reviewItems, ...writeResult.reviewItems];
+          await deps.storage.writeReviewItems(config, run, reviewItems);
+        }
       } catch (error) {
         run = {
           ...run,
