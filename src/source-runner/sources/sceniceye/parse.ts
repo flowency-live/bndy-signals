@@ -169,11 +169,16 @@ function parseTime(timeStr: string): string {
  * Normalise artist name using aliases from handoff doc.
  */
 function normaliseArtist(artist: string): string {
-  const lower = artist.toLowerCase().trim();
+  // Strip a trailing ticketing marker the source appends, e.g. "Pulse - A Pink Floyd Tribute - 🎫Ticket".
+  const cleaned = artist
+    .replace(/\s*[-\u2013\u2014]\s*\uD83C\uDFAB?\s*ticket\s*$/iu, '')
+    .replace(/\uD83C\uDFAB/gu, '')
+    .trim();
+  const lower = cleaned.toLowerCase().trim();
   if (ARTIST_ALIASES[lower]) {
     return ARTIST_ALIASES[lower];
   }
-  return artist;
+  return cleaned;
 }
 
 /**

@@ -52,12 +52,26 @@ function stripActSuffix(name: string): string {
   return name;
 }
 
+// UK postcode + non-town trailing tokens. The town sits BEFORE the postcode; the address
+// usually ends "..., <town>, <postcode>, England" (sometimes with a county before the postcode).
+const UK_POSTCODE = /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/;
+const NON_TOWN_PARTS = new Set(['england', 'uk', 'united kingdom', 'hampshire']);
+
 /**
- * Extract city from venue address (last comma-separated part).
+ * Extract the town from a venue address: walk from the end, skipping the country, a county,
+ * and the postcode, and return the first real locality. Falls back to the last part.
+ * (Was: blindly the last comma-part, which is always "England".)
  */
 function extractCity(venueAddress: string): string {
-  const parts = venueAddress.split(',').map((p) => p.trim());
-  return parts[parts.length - 1] || '';
+  const parts = venueAddress.split(',').map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return '';
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i] as string;
+    if (UK_POSTCODE.test(p)) continue;
+    if (NON_TOWN_PARTS.has(p.toLowerCase())) continue;
+    return p;
+  }
+  return parts[parts.length - 1] as string;
 }
 
 /**
