@@ -24,6 +24,7 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -277,6 +278,85 @@ export class SourceRunnerStack extends cdk.Stack {
     scenicEyeRule.addTarget(new targets.LambdaFunction(scenicEyeFn));
 
     // ---------------------------------------------------------------------
+    // Intelligence Pass Lambda (#89)
+    // Triggered by S3 run.json writes, resolves review items using LLM.
+    // Uses Bedrock Haiku 4.5 for entity resolution decisions.
+    // ---------------------------------------------------------------------
+
+    const intelligencePassFn = new nodejs.NodejsFunction(this, 'IntelligencePassFn', {
+      functionName: `bndy-intelligence-pass-${stage}`,
+      runtime: lambda.Runtime.NODEJS_20_X,
+      entry: path.join(__dirname, '../../../functions/intelligence-pass/index.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(5),
+      memorySize: 1024,
+      environment: {
+        ...commonEnv,
+        SOURCE_RUNS_BUCKET: signalsBucketName,
+        BNDY_API_URL: bndyApiBase,
+        MAX_ITEMS_PER_RUN: '50',
+        MAX_COST_PER_RUN: '1.0',
+        DRY_RUN: stage === 'prod' ? 'false' : 'true',
+      },
+      logRetention: logs.RetentionDays.ONE_MONTH,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    });
+
+    // Grant permissions
+    this.sourceStateTable.grantReadWriteData(intelligencePassFn);
+    this.sourceReviewTable.grantReadWriteData(intelligencePassFn);
+    signalsBucket.grantReadWrite(intelligencePassFn, 'source-runs/*');
+
+    // Grant Bedrock invoke permissions for Haiku 4.5
+    intelligencePassFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: [
+          `arn:aws:bedrock:eu-west-2::foundation-model/eu.anthropic.claude-haiku-4-5-*`,
+        ],
+      })
+    );
+
+    // S3 trigger: run.json writes trigger intelligence pass via EventBridge
+    // Note: The S3 bucket must have EventBridge notifications enabled.
+    // Enable via: aws s3api put-bucket-notification-configuration --bucket BUCKET \
+    //   --notification-configuration '{"EventBridgeConfiguration":{}}'
+    //
+    // EventBridge rule matches S3 Object Created events for run.json files
+    const intelligencePassS3Rule = new events.Rule(this, 'IntelligencePassS3Trigger', {
+      ruleName: `bndy-intelligence-pass-s3-trigger-${stage}`,
+      description: 'Trigger intelligence pass Lambda on source run completion (run.json write)',
+      eventPattern: {
+        source: ['aws.s3'],
+        detailType: ['Object Created'],
+        detail: {
+          bucket: {
+            name: [signalsBucketName],
+          },
+          object: {
+            key: [{ prefix: 'source-runs/' }, { suffix: '/run.json' }],
+          },
+        },
+      },
+      enabled: stage === 'prod',
+    });
+
+    intelligencePassS3Rule.addTarget(new targets.LambdaFunction(intelligencePassFn, {
+      // Transform EventBridge event to S3Event format expected by the handler
+      event: events.RuleTargetInput.fromObject({
+        Records: [{
+          s3: {
+            bucket: { name: events.EventField.fromPath('$.detail.bucket.name') },
+            object: { key: events.EventField.fromPath('$.detail.object.key') },
+          },
+        }],
+      }),
+    }))
+
+    // ---------------------------------------------------------------------
     // Outputs
     // ---------------------------------------------------------------------
 
@@ -308,6 +388,11 @@ export class SourceRunnerStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ScenicEyeFunctionArn', {
       value: scenicEyeFn.functionArn,
       exportName: `BndySourceRunner-${stage}-ScenicEyeFn`,
+    });
+
+    new cdk.CfnOutput(this, 'IntelligencePassFunctionArn', {
+      value: intelligencePassFn.functionArn,
+      exportName: `BndySourceRunner-${stage}-IntelligencePassFn`,
     });
   }
 }
