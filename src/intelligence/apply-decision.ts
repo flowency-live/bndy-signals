@@ -19,6 +19,7 @@ import {
   extractRunDateFromRunId,
   ReviewItemStorageConfig,
 } from './review-item-storage';
+import { HttpBndyWriteClient } from '../source-runner/bndy-client';
 
 // Type for external ID from source context or candidate data
 interface SourceExternalId {
@@ -117,8 +118,17 @@ export async function applyDecision(
 
     result.action = 'auto_applied';
     result.appliedEntityId = llmOutput.entityId;
+
+    // Create the gig's event NOW. The deterministic runner won't: on its next run the gig is
+    // `unchanged` (resolveEntities only processes diff.added) so it's never re-resolved. Idempotent
+    // server-side on the event externalId.
+    const ev = await createResolvedEvent(item, llmOutput, options.apiBaseUrl);
+    result.eventCreated = ev.created;
+    if (ev.eventId) result.createdEventId = ev.eventId;
+
     console.log(
-      `[INTELLIGENCE] AUTO-APPLIED: ${item.entityName} → ${llmOutput.entityId} (${llmOutput.confidence}%)`
+      `[INTELLIGENCE] AUTO-APPLIED: ${item.entityName} → ${llmOutput.entityId} (${llmOutput.confidence}%) | ` +
+        (ev.created ? `event created ${ev.eventId}` : `event NOT created: ${ev.reason}`)
     );
   } catch (error) {
     result.action = 'proposed'; // Fallback to human on error
@@ -127,6 +137,92 @@ export async function applyDecision(
   }
 
   return result;
+}
+
+// The runner's NormalisedEvent, as stored in the review item's candidateData.
+interface GigContext {
+  externalId?: string;
+  date?: string;
+  startTime?: string | null;
+  venue?: { sourceVenueExternalId?: string; canonicalName?: string };
+  artist?: { sourceArtistExternalId?: string; canonicalName?: string };
+}
+
+/**
+ * Look up an existing entity's bndy id by source external id.
+ * NB: the by-external-id routes require BOTH `source` and `id` query params (the runner client's
+ * single-param `externalId=` call does NOT work against them).
+ */
+async function lookupEntityId(
+  entityType: 'artist' | 'venue',
+  source: string,
+  id: string,
+  apiBaseUrl: string
+): Promise<string | undefined> {
+  const route = entityType === 'venue' ? 'venues' : 'artists';
+  const url = `${apiBaseUrl}/api/${route}/by-external-id?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as Record<string, unknown>;
+    if (data.found === false) return undefined;
+    const nested = data[entityType] as Record<string, unknown> | undefined;
+    return (nested?.id as string | undefined) ?? (data.id as string | undefined);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Create the gig's public event after a high-confidence entity match. Resolves the partner entity
+ * deterministically by its source external id; only creates when BOTH resolve (never fuzzy).
+ * Idempotent server-side on the event externalId.
+ */
+async function createResolvedEvent(
+  item: ReviewItemInput,
+  llmOutput: LLMResolutionOutput,
+  apiBaseUrl: string
+): Promise<{ created: boolean; eventId?: string; reason?: string }> {
+  const cd = item.candidateData as GigContext | null | undefined;
+  if (!cd || !cd.externalId || !cd.date) return { created: false, reason: 'no event context' };
+  if (!llmOutput.entityId) return { created: false, reason: 'no matched entityId' };
+
+  let venueId: string | undefined;
+  let artistId: string | undefined;
+
+  if (item.entityType === 'venue') {
+    venueId = llmOutput.entityId;
+    if (cd.artist?.sourceArtistExternalId) {
+      artistId = await lookupEntityId('artist', item.sourceId, cd.artist.sourceArtistExternalId, apiBaseUrl);
+    }
+  } else {
+    artistId = llmOutput.entityId;
+    if (cd.venue?.sourceVenueExternalId) {
+      venueId = await lookupEntityId('venue', item.sourceId, cd.venue.sourceVenueExternalId, apiBaseUrl);
+    }
+  }
+
+  if (!venueId || !artistId) {
+    return { created: false, reason: `partner unresolved (venue=${!!venueId}, artist=${!!artistId})` };
+  }
+
+  const title =
+    cd.artist?.canonicalName && cd.venue?.canonicalName
+      ? `${cd.artist.canonicalName} @ ${cd.venue.canonicalName}`
+      : undefined;
+
+  const client = new HttpBndyWriteClient(apiBaseUrl);
+  const res = await client.createEvent({
+    externalId: cd.externalId,
+    date: cd.date,
+    startTime: cd.startTime ?? null,
+    venueId,
+    artistId,
+    isPublic: true, // public discovery event
+    sourceId: item.sourceId,
+    title,
+  });
+  return res.success ? { created: true, eventId: res.eventId } : { created: false, reason: res.error };
 }
 
 /**
@@ -172,35 +268,21 @@ async function performAutoApply(
  * Extract the source externalId from the review item's candidate data.
  */
 function extractExternalId(item: ReviewItemInput): SourceExternalId | null {
-  // candidateData may contain the source external ID
-  const candidateData = item.candidateData as Record<string, unknown> | null;
-  if (!candidateData) return null;
+  // candidateData is the runner's NormalisedEvent. The deterministic source key lives on the
+  // venue/artist sub-object (e.g. "venue_cowplain-social-club" / "artist_hitched") — the SAME id
+  // the runner's write path stamps and looks up next run. NEVER fall back to the review-item UUID.
+  const cd = item.candidateData as Record<string, unknown> | null | undefined;
+  if (!cd || !item.sourceId) return null;
 
-  // Check common patterns for external ID storage
-  if (candidateData.externalId && typeof candidateData.externalId === 'object') {
-    const extId = candidateData.externalId as SourceExternalId;
-    if (extId.source && extId.id) {
-      return extId;
-    }
+  if (item.entityType === 'venue') {
+    const venue = cd.venue as Record<string, unknown> | undefined;
+    const id = venue?.sourceVenueExternalId as string | undefined;
+    return id ? { source: item.sourceId, id } : null;
   }
 
-  // Check externalIds array
-  if (Array.isArray(candidateData.externalIds) && candidateData.externalIds.length > 0) {
-    const first = candidateData.externalIds[0] as SourceExternalId;
-    if (first.source && first.id) {
-      return first;
-    }
-  }
-
-  // Fallback: construct from sourceId + item id
-  if (item.sourceId) {
-    return {
-      source: item.sourceId,
-      id: item.id,
-    };
-  }
-
-  return null;
+  const artist = cd.artist as Record<string, unknown> | undefined;
+  const id = artist?.sourceArtistExternalId as string | undefined;
+  return id ? { source: item.sourceId, id } : null;
 }
 
 /**

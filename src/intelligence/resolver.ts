@@ -28,6 +28,7 @@ export interface ResolverDependencies {
 export interface ResolverRunResult {
   processed: number;
   autoApplied: number;
+  eventsCreated: number;
   proposed: number;
   skipped: number;
   totalCostUSD: number;
@@ -107,6 +108,7 @@ export async function runIntelligencePass(
   const results: ResolutionResult[] = [];
   let totalCostUSD = 0;
   let autoApplied = 0;
+  let eventsCreated = 0;
   let proposed = 0;
   let skipped = 0;
 
@@ -125,6 +127,8 @@ export async function runIntelligencePass(
       totalCostUSD += result.cost.estimatedCostUSD;
     }
 
+    if (result.eventCreated) eventsCreated++;
+
     switch (result.action) {
       case 'auto_applied':
         autoApplied++;
@@ -141,6 +145,7 @@ export async function runIntelligencePass(
   return {
     processed: results.length,
     autoApplied,
+    eventsCreated,
     proposed,
     skipped,
     totalCostUSD,

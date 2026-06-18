@@ -30,9 +30,9 @@ const DRY_RUN = process.env.DRY_RUN === 'true';
 
 // Source-specific default regions (for context in LLM resolution)
 const SOURCE_DEFAULT_REGIONS: Record<string, string> = {
-  'sceniceye-daily': 'Hampshire',
-  'onthecase-daily': 'Tyne and Wear',
-  'gigs-news-daily': 'North West',
+  'sceniceye-daily-import': 'Hampshire',
+  'onthecase-daily-import': 'North East England',
+  'gigs-news-daily-import': 'Greater Manchester / East Cheshire',
   'klma-stoke-gig-list': 'Staffordshire',
 };
 
@@ -63,6 +63,7 @@ interface IntelligencePassOutput {
   runDate: string;
   processed: number;
   autoApplied: number;
+  eventsCreated: number;
   proposed: number;
   skipped: number;
   totalCostUSD: number;
@@ -121,14 +122,15 @@ function transformToReviewItemInput(
   item: StoredReviewItem,
   sourceDefaultRegion?: string
 ): ReviewItemInput {
-  // Extract venue info from candidateData if present
-  const candidateData = item.candidateData || {};
-  const venueName = candidateData.venue as string | undefined ||
-    candidateData.venueName as string | undefined;
-  const venueRegion = candidateData.venueRegion as string | undefined ||
-    candidateData.city as string | undefined;
-  const date = candidateData.date as string | undefined;
-  const coActs = candidateData.coActs as string[] | undefined;
+  // candidateData is the runner's NormalisedEvent — venue/artist are OBJECTS, not strings.
+  const eventData = (item.candidateData || {}) as Record<string, unknown>;
+  const venueObj = (eventData.venue || {}) as Record<string, unknown>;
+  const venueName = (venueObj.canonicalName as string | undefined) ||
+    (venueObj.sourceName as string | undefined);
+  const venueRegion = (venueObj.region as string | undefined) ||
+    (venueObj.city as string | undefined);
+  const date = eventData.date as string | undefined;
+  const coActs = eventData.coActs as string[] | undefined; // not in model yet; forward-compat
 
   return {
     id: item.id,
@@ -210,6 +212,7 @@ export const handler: Handler<S3Event, IntelligencePassOutput | null> = async (e
       runDate,
       processed: 0,
       autoApplied: 0,
+      eventsCreated: 0,
       proposed: 0,
       skipped: 0,
       totalCostUSD: 0,
@@ -251,6 +254,7 @@ export const handler: Handler<S3Event, IntelligencePassOutput | null> = async (e
     runDate,
     processed: passResult.processed,
     autoApplied: passResult.autoApplied,
+    eventsCreated: passResult.eventsCreated,
     proposed: passResult.proposed,
     skipped: passResult.skipped,
     totalCostUSD: passResult.totalCostUSD,
@@ -261,6 +265,7 @@ export const handler: Handler<S3Event, IntelligencePassOutput | null> = async (e
   console.log(`[INTELLIGENCE-PASS] Complete:`, {
     processed: result.processed,
     autoApplied: result.autoApplied,
+    eventsCreated: result.eventsCreated,
     proposed: result.proposed,
     skipped: result.skipped,
     cost: `$${result.totalCostUSD.toFixed(4)}`,

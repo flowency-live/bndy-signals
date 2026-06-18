@@ -310,12 +310,16 @@ export class SourceRunnerStack extends cdk.Stack {
     this.sourceReviewTable.grantReadWriteData(intelligencePassFn);
     signalsBucket.grantReadWrite(intelligencePassFn, 'source-runs/*');
 
-    // Grant Bedrock invoke permissions for Haiku 4.5
+    // Grant Bedrock invoke for Haiku 4.5. NB: `eu.anthropic…` is a cross-region INFERENCE PROFILE,
+    // so we need the inference-profile ARN (account-scoped) AND the underlying regional
+    // foundation-model ARNs it routes to (no `eu.` prefix, any region). Granting only the
+    // foundation-model/eu.anthropic… ARN → AccessDenied at invoke time.
     intelligencePassFn.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
         resources: [
-          `arn:aws:bedrock:eu-west-2::foundation-model/eu.anthropic.claude-haiku-4-5-*`,
+          `arn:aws:bedrock:*:${this.account}:inference-profile/eu.anthropic.claude-haiku-4-5-*`,
+          `arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-*`,
         ],
       })
     );
@@ -337,7 +341,9 @@ export class SourceRunnerStack extends cdk.Stack {
             name: [signalsBucketName],
           },
           object: {
-            key: [{ prefix: 'source-runs/' }, { suffix: '/run.json' }],
+            // suffix-only: prefix+suffix in one array is OR in EventBridge, which fired on every
+            // object a run writes (incl. our own pass-result.json → self-invoke). run.json is specific.
+            key: [{ suffix: '/run.json' }],
           },
         },
       },

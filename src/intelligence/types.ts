@@ -91,6 +91,8 @@ export const ResolutionResultSchema = z.object({
   action: ResolutionActionSchema,
   llmOutput: LLMResolutionOutputSchema.optional(),
   appliedEntityId: z.string().optional(), // set when auto_applied
+  eventCreated: z.boolean().optional(), // true when the gig's event was created this pass
+  createdEventId: z.string().optional(), // bndy event id, if created
   cost: z.object({
     modelId: z.string(),
     tokensIn: z.number(),
