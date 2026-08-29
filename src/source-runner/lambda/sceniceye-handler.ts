@@ -37,7 +37,7 @@ export async function handler(event: ScheduledEvent): Promise<LambdaResponse> {
   const options: RunSourceOptions = {
     sourceId,
     date: runDate,
-    dryRun: false,
+    dryRun: process.env.LEGACY_SOURCE_WRITES_ENABLED !== 'true',
     localStorage: false,
     reviewOnly: false,
   };
