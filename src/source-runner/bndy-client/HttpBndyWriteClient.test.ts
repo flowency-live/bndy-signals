@@ -222,20 +222,11 @@ describe('HttpBndyWriteClient', () => {
       expect(result.error).toContain('review');
     });
 
-    it('should fallback to /api/artists/community on 404', async () => {
-      // First call to find-or-create returns 404
+    it('fails closed when artist find-or-create is unavailable', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
         statusText: 'Not Found',
-      });
-      // Fallback to community endpoint succeeds
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          message: 'Artist created successfully',
-          artist: { id: 'bndy-artist-fallback', name: 'Test Artist' },
-        }),
       });
 
       const result = await client.createArtist({
@@ -245,13 +236,10 @@ describe('HttpBndyWriteClient', () => {
         sourceId: 'klma-stoke-gig-list',
       });
 
-      // Should have made 2 calls
-      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch.mock.calls[0][0]).toBe(`${baseUrl}/api/artists/find-or-create`);
-      expect(mockFetch.mock.calls[1][0]).toBe(`${baseUrl}/api/artists/community`);
-
-      expect(result.success).toBe(true);
-      expect(result.artistId).toBe('bndy-artist-fallback');
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('HTTP 404: Not Found');
     });
   });
 
