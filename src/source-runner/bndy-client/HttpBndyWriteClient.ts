@@ -33,11 +33,6 @@ interface ArtistFindOrCreateResponse {
   candidates?: Array<{ id: string; name: string; confidence: number }>;
 }
 
-interface ArtistCommunityResponse {
-  message?: string;
-  artist?: { id: string; name: string };
-}
-
 interface EventResponse {
   id: string;
 }
@@ -128,9 +123,6 @@ export class HttpBndyWriteClient implements BndyWriteClient {
    * ADR-014 gate: server may return action: 'review' for ambiguous matches.
    * Uses externalIds array format: [{source, id}]
    * Uses location field (not region) for artist location.
-   *
-   * Falls back to /api/artists/community if find-or-create returns 404
-   * (matches MCP server behavior for deployments where route isn't available).
    */
   async createArtist(request: CreateArtistRequest): Promise<CreateArtistResult> {
     const artistData = {
@@ -152,11 +144,6 @@ export class HttpBndyWriteClient implements BndyWriteClient {
         body: JSON.stringify(artistData),
       });
 
-      // Fallback to /api/artists/community on 404 (route not deployed)
-      if (response.status === 404) {
-        return this.createArtistCommunityFallback(artistData);
-      }
-
       if (!response.ok) {
         return {
           success: false,
@@ -175,42 +162,6 @@ export class HttpBndyWriteClient implements BndyWriteClient {
         };
       }
 
-      return {
-        success: true,
-        artistId: data.artist?.id,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
-
-  /**
-   * Fallback artist creation via /api/artists/community
-   * Used when /api/artists/find-or-create is not deployed (404).
-   * This route always creates (no dedup) - use with caution.
-   */
-  private async createArtistCommunityFallback(
-    artistData: Record<string, unknown>
-  ): Promise<CreateArtistResult> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/artists/community`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(artistData),
-      });
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: `HTTP ${response.status}: ${response.statusText} (community fallback)`,
-        };
-      }
-
-      // Response: { message: '...', artist: { id, name, ... } }
-      const data = (await response.json()) as ArtistCommunityResponse;
       return {
         success: true,
         artistId: data.artist?.id,

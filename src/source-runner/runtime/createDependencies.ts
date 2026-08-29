@@ -141,7 +141,7 @@ export async function createRunnerDependencies(
     );
   }
 
-  const baseUrl = process.env.BNDY_API_BASE_URL ?? DEFAULT_BNDY_API_BASE_URL;
+  const baseUrl = process.env.BNDY_API_BASE ?? process.env.BNDY_API_BASE_URL ?? DEFAULT_BNDY_API_BASE_URL;
   const client = new HttpBndyWriteClient(baseUrl);
   const resolutionState = new InMemorySourceStateStore();
 

@@ -102,6 +102,10 @@ export class SourceRunnerStack extends cdk.Stack {
       SOURCE_REVIEW_TABLE: this.sourceReviewTable.tableName,
       BNDY_SOURCE_RUNS_BUCKET: signalsBucketName,
       BNDY_API_BASE: bndyApiBase,
+      // Legacy source runners are retained only for forensic comparison with
+      // Backline. A manual Lambda invocation must remain non-canonical even if
+      // an old production stack is redeployed.
+      LEGACY_SOURCE_WRITES_ENABLED: 'false',
     };
 
     // ---------------------------------------------------------------------
@@ -137,7 +141,7 @@ export class SourceRunnerStack extends cdk.Stack {
         minute: '0',
         hour: '8',
       }),
-      enabled: stage === 'prod',
+      enabled: false,
     });
 
     klmaRule.addTarget(new targets.LambdaFunction(klmaFn));
@@ -181,7 +185,7 @@ export class SourceRunnerStack extends cdk.Stack {
         minute: '5',
         hour: '3',
       }),
-      enabled: stage === 'prod',
+      enabled: false,
     });
 
     onTheCaseRule.addTarget(new targets.LambdaFunction(onTheCaseFn));
@@ -225,7 +229,7 @@ export class SourceRunnerStack extends cdk.Stack {
         minute: '0',
         hour: '8',
       }),
-      enabled: stage === 'prod',
+      enabled: false,
     });
 
     gigsNewsRule.addTarget(new targets.LambdaFunction(gigsNewsFn));
@@ -272,7 +276,7 @@ export class SourceRunnerStack extends cdk.Stack {
         minute: '30',
         hour: '8',
       }),
-      enabled: stage === 'prod',
+      enabled: false,
     });
 
     scenicEyeRule.addTarget(new targets.LambdaFunction(scenicEyeFn));
@@ -296,7 +300,7 @@ export class SourceRunnerStack extends cdk.Stack {
         BNDY_API_URL: bndyApiBase,
         MAX_ITEMS_PER_RUN: '50',
         MAX_COST_PER_RUN: '1.0',
-        DRY_RUN: stage === 'prod' ? 'false' : 'true',
+        DRY_RUN: 'true',
       },
       logRetention: logs.RetentionDays.ONE_MONTH,
       bundling: {
@@ -347,7 +351,7 @@ export class SourceRunnerStack extends cdk.Stack {
           },
         },
       },
-      enabled: stage === 'prod',
+      enabled: false,
     });
 
     intelligencePassS3Rule.addTarget(new targets.LambdaFunction(intelligencePassFn, {
